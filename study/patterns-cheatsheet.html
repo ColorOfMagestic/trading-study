@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка 2.5 — Свечи-сигналы (паттерны)</title>
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;max-width:1080px;margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:660px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px} p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+
+  /* закон */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;position:relative}
+  .law .big .neq{color:var(--down)}
+  .law .fx{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+  .law .fx .b{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+  .law .fx .b .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .law .fx .b b{color:var(--accent)}
+
+  /* как читать свечу */
+  .anat{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+  @media(max-width:560px){.anat{grid-template-columns:1fr;justify-items:center;text-align:center}}
+  .anat ul{list-style:none;font-size:14.5px}
+  .anat li{padding:5px 0 5px 22px;position:relative}
+  .anat li::before{content:"›";position:absolute;left:2px;color:var(--muted);font-weight:800}
+
+  /* CSS-свечи */
+  .candle{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:34px;vertical-align:middle}
+  .candle .wick{width:2px;background:currentColor;border-radius:2px}
+  .candle .body{width:20px;background:currentColor;border-radius:3px}
+  .candle.up{color:var(--up)} .candle.down{color:var(--down)}
+  .pair{display:inline-flex;gap:4px;align-items:flex-end}
+
+  /* сетка паттернов */
+  .pats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.pats{grid-template-columns:1fr}}
+  .pat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column}
+  .pat .pt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .pat .pt h3{font-size:16px;font-weight:800}
+  .pat .rank{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:3px 9px;white-space:nowrap}
+  .pat .viz{display:flex;align-items:flex-end;justify-content:center;gap:14px;height:96px;background:#12161f;border:1px solid var(--line);border-radius:10px;margin-bottom:12px;padding:8px}
+  .pat p{font-size:14px;margin-bottom:8px}
+  .pat .stop{margin-top:auto;padding-top:10px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--muted)}
+  .pat .stop b{color:var(--txt)}
+  .lvl{height:2px;background:var(--accent);opacity:.5;align-self:center;width:70%;position:relative}
+  .badge-u{color:var(--up);font-weight:800}
+  .badge-d{color:var(--down);font-weight:800}
+
+  /* сила */
+  .power{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+  .power .p{flex:1 1 120px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .power .p .r{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .power .p .nm{font-weight:800;font-size:15px}
+  .power .p.s1{border-color:var(--up-bd)}
+  .power .arrow{align-self:center;color:var(--muted);font-weight:800}
+
+  /* формула */
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s{color:var(--accent);font-weight:800}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  /* итог */
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 2 · Урок 2.5 · Чтение графика</div>
+  <h1>Свечи-сигналы — <span class="em">триггеры входа</span></h1>
+  <p class="sub">Свеча отвечает на вопрос «КОГДА». Но работает только НА уровне или в зоне — в пустоте любая свеча просто шум.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / бычья свеча (close &gt; open)</span>
+    <span><i class="dot d"></i> 🟣 падение / медвежья свеча (close &lt; open)</span>
+  </div>
+</header>
+
+<!-- Главный закон -->
+<section>
+  <div class="h"><div class="n">★</div><h2>Главный закон</h2></div>
+  <div class="law">
+    <div class="lbl">🔑 Держать в голове всегда</div>
+    <div class="big">Свеча-сигнал = вход <span style="color:var(--warn)">ТОЛЬКО на уровне / в зоне</span>. В пустоте <span class="neq">≠</span> сигнал, это мусор.</div>
+    <div class="fx">
+      <div class="b"><div class="k">Где</div><b>уровень / зона</b> — локация из 2.3–2.4</div>
+      <div class="b"><div class="k">Когда</div><b>свеча-сигнал</b> — триггер (этот лист)</div>
+      <div class="b"><div class="k">Куда</div><b>старший ТФ</b> — направление (3.1)</div>
+    </div>
+  </div>
+</section>
+
+<!-- Как читать свечу -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Как вообще читать свечу</h2></div>
+  <div class="card">
+    <div class="anat">
+      <div class="pair">
+        <div class="candle up"><span class="wick" style="height:10px"></span><span class="body" style="height:38px"></span><span class="wick" style="height:10px"></span></div>
+        <div class="candle down"><span class="wick" style="height:30px"></span><span class="body" style="height:16px"></span><span class="wick" style="height:12px"></span></div>
+      </div>
+      <ul>
+        <li><b>Тело</b> (открытие ↔ закрытие) = <b>кто победил</b> в периоде. Большое тело — уверенная сторона.</li>
+        <li><b>Тень / фитиль</b> = <b>кого вынесли</b>. Цена сходила туда и её отвергли — там сняли ликвидность.</li>
+        <li><b>Цвет</b> — направление: <span class="badge-u">🟠 вверх</span> (close &gt; open) / <span class="badge-d">🟣 вниз</span> (close &lt; open).</li>
+        <li><b>Событие считаем по ЗАКРЫТИЮ.</b> Прокол тенью без закрытия — не сигнал, а ловушка.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Паттерны -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Паттерны — база (учить эти четыре)</h2></div>
+  <div class="pats">
+
+    <!-- Пин-бар -->
+    <div class="pat">
+      <div class="pt"><h3>Пин-бар</h3><span class="rank">отвержение</span></div>
+      <div class="viz">
+        <div class="candle up"><span class="wick" style="height:6px"></span><span class="body" style="height:16px"></span><span class="wick" style="height:52px"></span></div>
+        <div class="lvl" style="width:40px"></div>
+        <div class="candle down"><span class="wick" style="height:52px"></span><span class="body" style="height:16px"></span><span class="wick" style="height:6px"></span></div>
+      </div>
+      <p>Маленькое тело + <b>длинный фитиль</b> (≥2–3× тела) = сторона попыталась и <b>её отвергли</b>. Длинная тень = снятая ликвидность.</p>
+      <p><span class="badge-u">Бычий</span> (нижняя тень) — на поддержке / в зоне спроса. <span class="badge-d">Медвежий</span> (верхняя тень) — на сопротивлении / в зоне предложения.</p>
+      <div class="stop"><b>Стоп:</b> за кончик фитиля (пин даёт самый точный стоп).</div>
+    </div>
+
+    <!-- Поглощение -->
+    <div class="pat">
+      <div class="pt"><h3>Поглощение</h3><span class="rank">самый надёжный</span></div>
+      <div class="viz">
+        <div class="candle down"><span class="wick" style="height:8px"></span><span class="body" style="height:24px"></span><span class="wick" style="height:8px"></span></div>
+        <div class="candle up"><span class="wick" style="height:6px"></span><span class="body" style="height:54px"></span><span class="wick" style="height:6px"></span></div>
+        <div class="lvl" style="width:36px"></div>
+      </div>
+      <p>Две свечи: вторая <b>телом полностью перекрывает</b> первую в обратную сторону = <b>перехват силы</b>. Обычно надёжнее пина.</p>
+      <p><span class="badge-u">Бычье</span> — 🟣 сменилась крупной 🟠 в зоне спроса. <span class="badge-d">Медвежье</span> — 🟠 сменилась крупной 🟣 в зоне предложения.</p>
+      <div class="stop"><b>Стоп:</b> за экстремум пары свечей (стоп шире, чем у пина).</div>
+    </div>
+
+    <!-- Inside bar -->
+    <div class="pat">
+      <div class="pt"><h3>Inside bar</h3><span class="rank">сжатие / пауза</span></div>
+      <div class="viz">
+        <div class="candle up"><span class="wick" style="height:6px"></span><span class="body" style="height:58px"></span><span class="wick" style="height:6px"></span></div>
+        <div class="candle down"><span class="wick" style="height:14px"></span><span class="body" style="height:20px"></span><span class="wick" style="height:14px"></span></div>
+      </div>
+      <p>Свеча целиком <b>внутри диапазона предыдущей</b> (материнской) = <b>сжатие пружины</b>, пауза. <b>Направления сам не даёт.</b></p>
+      <p>Торгуем <b>пробой границы по закрытию</b> — лучше на уровне и по тренду. В крипте много ложных → строго ждать закрытие.</p>
+      <div class="stop"><b>Стоп:</b> за противоположную границу материнской свечи.</div>
+    </div>
+
+    <!-- Доджи -->
+    <div class="pat">
+      <div class="pt"><h3>Доджи</h3><span class="rank">слабейший</span></div>
+      <div class="viz">
+        <div class="candle up"><span class="wick" style="height:26px"></span><span class="body" style="height:3px"></span><span class="wick" style="height:26px"></span></div>
+        <div class="lvl" style="width:40px"></div>
+      </div>
+      <p>Тело ≈ 0, крестик = <b>паритет / нерешительность</b>. Никто не победил. Самый слабый сигнал.</p>
+      <p>На уровне после импульса = <b>выдох инерции</b>, это <b>предупреждение, а не команда</b>. Ждём подтверждающую свечу.</p>
+      <div class="stop"><b>Стоп:</b> за хай/лоу доджи — только после подтверждения.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Бонус: PPR и Fakey -->
+<section>
+  <div class="h"><div class="n">3</div><h2>Бонус — PPR и Fakey</h2></div>
+  <div class="card">
+    <p><b>PPR (Pivot Point Reversal)</b> — двухсвечный разворот, <b>близкий родственник поглощения</b>. Критерий строже: вторая свеча <b>закрывается за экстремум первой</b> в обратную сторону. Встраивается как триггер туда же, где ждёшь поглощение.</p>
+    <p><b>Fakey</b> — формализованный <b>ложный пробой на базе inside bar</b>: цена выносит границу inside bar (собирает стопы) и <b>возвращается обратно с закрытием</b>. Это буквально «снятие ликвидности» из 2.4 в виде готового паттерна.</p>
+    <p class="muted">Это <b>надстройка</b>, не замена базы. Сначала твёрдо: пин · поглощение · inside bar · доджи.</p>
+  </div>
+</section>
+
+<!-- Сила -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Сила сигнала — по убыванию</h2></div>
+  <div class="power">
+    <div class="p s1"><div class="r">сильнее</div><div class="nm">Поглощение</div></div>
+    <div class="arrow">›</div>
+    <div class="p"><div class="r">↓</div><div class="nm">Пин-бар</div></div>
+    <div class="arrow">›</div>
+    <div class="p"><div class="r">↓</div><div class="nm">Inside bar</div></div>
+    <div class="arrow">›</div>
+    <div class="p"><div class="r">слабее</div><div class="nm">Доджи</div></div>
+  </div>
+  <div class="mnemo">И любую силу <b>умножает контекст</b>: уровень × круглое число × старший ТФ × funding = конфлюенс. Свеча в конфлюенсе &gt; свеча в одиночку.</div>
+</section>
+
+<!-- Формула -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Где свеча в системе входа</h2></div>
+  <div class="formula">
+    <div class="step" style="border-color:var(--warn)">
+      <div class="k"><span class="s" style="color:var(--warn)">⓪</span> Контекст</div>
+      <div class="v">BTC · доминация · funding · OI</div>
+      <small>фильтр-вето</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">①</span> Направление</div>
+      <div class="v">тренд D1</div>
+      <small>лонг / шорт</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">②</span> Локация</div>
+      <div class="v">уровень / зона</div>
+      <small>ГДЕ имею право</small>
+    </div>
+    <div class="step" style="border-color:var(--accent)">
+      <div class="k"><span class="s">③</span> Триггер</div>
+      <div class="v">свеча-сигнал H1</div>
+      <small>КОГДА жму — этот лист</small>
+    </div>
+  </div>
+</section>
+
+<!-- Ловушки -->
+<section>
+  <div class="h"><div class="n">6</div><h2>Ловушки (твои разобранные ошибки)</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">Пробой ЗОНЫ ≠ пробой ПАТТЕРНА</div>
+      <p>Inside bar может дать пробой своей границы <b>вверх</b> — это сигнал на отскок, <b>даже если сама зона не пробита</b>. Не путать «пробой паттерна» (триггер) с «пробоем уровня» (структура).</p>
+    </div>
+    <div class="trap">
+      <div class="no">Пин по тренду ≠ разворотный</div>
+      <p>Один и тот же пин может быть <b>продолжением</b> (в даунтренде пин у сопротивления снизу) или <b>разворотным</b> (пин против локального движения на уровне). Смотри, ПРОТИВ чего он и где стоит.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Свеча в пустоте</div>
+      <p>Красивый пин/поглощение <b>без уровня под ним</b> = не сигнал. Сначала находишь локацию (②), только потом смотришь свечу (③), не наоборот.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Прокол ≠ закрытие</div>
+      <p>Длинный фитиль сквозь уровень — это <b>снятие ликвидности</b>, а не пробой. Событие засчитываем <b>только по закрытию</b> свечи.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Свеча-сигнал = вход ТОЛЬКО на уровне / в зоне.</b> В пустоте — мусор.</li>
+      <li>Читаем свечу: <b>тело</b> = кто победил, <b>тень</b> = кого вынесли (снятая ликвидность).</li>
+      <li><b>Пин-бар</b> — тело + фитиль ≥2–3×, отвержение; стоп за кончик фитиля.</li>
+      <li><b>Поглощение</b> — 2-я свеча перекрывает 1-ю обратно, перехват силы; надёжнее пина.</li>
+      <li><b>Inside bar</b> — внутри материнской, направления не даёт; торгуем пробой по закрытию.</li>
+      <li><b>Доджи</b> — крестик, паритет; предупреждение, не команда; ждём подтверждение.</li>
+      <li><b>PPR</b> = родня поглощения (закрытие за экстремум). <b>Fakey</b> = ложный пробой на inside bar.</li>
+      <li>Сила: <b>поглощение &gt; пин &gt; inside bar &gt; доджи</b>; всё × контекст = конфлюенс.</li>
+      <li>Событие — <b>по закрытию</b>. Прокол тенью не считается.</li>
+      <li>Место в системе: ⓪ Контекст → ① Направление → ② Локация → <b>③ Свеча</b>.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Урок 2.5</div>
+  Метод: чистый график → структура → уровни → <b>паттерн ОТ уровня</b>.<br>
+  Соседние шпаргалки: <a class="navlink" href="funding-cheatsheet.html">funding</a> · <a class="navlink" href="derivatives-cheatsheet.html">деривативы (OI/ликвидации)</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Модуль 2 — Чтение графика</title>
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;max-width:1080px;margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:660px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px} p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+  .badge-u{color:var(--up);font-weight:800}
+  .badge-d{color:var(--down);font-weight:800}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .side{border-radius:14px;padding:20px;border:1px solid}
+  .side.up{background:var(--up-dim);border-color:var(--up-bd)}
+  .side.down{background:var(--down-dim);border-color:var(--down-bd)}
+  .side h3{font-size:16px;margin-bottom:12px;font-weight:800}
+  .side.up h3{color:var(--up)} .side.down h3{color:var(--down)}
+  .side ul{list-style:none;font-size:14.5px}
+  .side li{padding:4px 0 4px 20px;position:relative;color:var(--txt)}
+  .side li::before{content:"›";position:absolute;left:2px;color:var(--muted);font-weight:800}
+  .side .out{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-weight:700;font-size:14.5px}
+  .side.up .out{color:var(--up)} .side.down .out{color:var(--down)}
+
+  /* формула-цепочка */
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s{color:var(--accent);font-weight:800}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+  .step.warnb{border-color:var(--warn)} .step.accb{border-color:var(--accent)}
+
+  /* мантра */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;position:relative}
+  .law .big .neq{color:var(--down)}
+
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  .jump{display:block;background:var(--card);border:1px solid var(--accent);border-radius:14px;padding:18px 22px;margin-top:24px;text-decoration:none;color:var(--txt)}
+  .jump b{color:var(--accent)}
+  .jump .arw{float:right;color:var(--accent);font-weight:800}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 2 · Чтение графика</div>
+  <h1>Карта рынка — <span class="em">структура, уровни, зоны</span></h1>
+  <p class="sub">Как «читать» чистый график: где мы в тренде, откуда крупный входит и где лежит ликвидность толпы. Свеча-триггер — на отдельном листе.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / бычье движение</span>
+    <span><i class="dot d"></i> 🟣 падение / медвежье движение</span>
+  </div>
+</header>
+
+<!-- 1. Структура -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Структура рынка (2.1)</h2></div>
+  <div class="card">
+    <p>Рынок «дышит»: <b>импульс</b> (направленное движение) + <b>коррекция</b> (откат, передышка). Тренд — это <b>лестница из ступенек</b>, а не прямая линия.</p>
+    <p><b class="accent">Откат ≠ разворот</b> — главное различие всего модуля. Пока лестница идёт в одну сторону — тренд жив.</p>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="side up">
+      <h3>🟠 Аптренд = HH + HL</h3>
+      <ul>
+        <li><b>HH</b> — higher high (каждый пик <b>выше</b>)</li>
+        <li><b>HL</b> — higher low (каждая ямка <b>выше</b>)</li>
+        <li>Покупатели сильнее — берём только <b>лонги</b></li>
+      </ul>
+      <div class="out">Ступеньки идут ВВЕРХ</div>
+    </div>
+    <div class="side down">
+      <h3>🟣 Даунтренд = LH + LL</h3>
+      <ul>
+        <li><b>LH</b> — lower high (каждый пик <b>ниже</b>)</li>
+        <li><b>LL</b> — lower low (каждая ямка <b>ниже</b>)</li>
+        <li>Продавцы сильнее — берём только <b>шорты</b></li>
+      </ul>
+      <div class="out">Ступеньки идут ВНИЗ</div>
+    </div>
+  </div>
+  <div class="mnemo"><b>Флэт</b> буквами HH/HL НЕ размечается — это язык тренда. Флэт = две горизонтали + <b>EQH / EQL</b> (равные верхи/низы = ликвидность). Событие структуры считаем <b>только по ЗАКРЫТИЮ</b> свечи за уровнем — прокол тенью не считается.</div>
+</section>
+
+<!-- 2. BOS и CHoCH -->
+<section>
+  <div class="h"><div class="n">2</div><h2>BOS и CHoCH — слом структуры (2.2)</h2></div>
+  <div class="grid2">
+    <div class="side up">
+      <h3>BOS — Break of Structure</h3>
+      <ul>
+        <li>Слом <b>ПО тренду</b> = продолжение</li>
+        <li>Пробили <b>HH</b> в аптренде / <b>LL</b> в даунтренде</li>
+        <li>Лестница шагнула дальше</li>
+      </ul>
+      <div class="out">ломает «потолок» ПО ходу движения</div>
+    </div>
+    <div class="side down">
+      <h3>CHoCH — Change of Character</h3>
+      <ul>
+        <li>Слом <b>ПРОТИВ тренда</b> = 1-й признак разворота</li>
+        <li>Пробили последний <b>HL</b> в аптренде / <b>LH</b> в даунтренде</li>
+        <li>Выбита опора тренда</li>
+      </ul>
+      <div class="out">выбивает «опору» ПОД движением</div>
+    </div>
+  </div>
+  <div class="law" style="margin-top:14px">
+    <div class="lbl">🔑 Порядок разворота (аптренд → даунтренд)</div>
+    <div class="formula" style="margin-top:6px">
+      <div class="step accb"><div class="k">старт</div><div class="v">Аптренд</div><small>HH + HL</small></div>
+      <div class="step warnb"><div class="k"><span class="s" style="color:var(--warn)">①</span> гипотеза</div><div class="v">CHoCH</div><small>слом HL</small></div>
+      <div class="step"><div class="k">②</div><div class="v">LH</div><small>ниже пик</small></div>
+      <div class="step accb"><div class="k"><span class="s">③</span> подтверждение</div><div class="v">BOS вниз</div><small>пробой LL</small></div>
+      <div class="step"><div class="k">итог</div><div class="v">Даунтренд</div><small>LH + LL</small></div>
+    </div>
+  </div>
+  <div class="mnemo">Мантра: <b>BOS ломает потолок по ходу; CHoCH выбивает опору.</b> CHoCH = гипотеза, первый BOS в новую сторону = подтверждение. <b>Профи не переворачивается на одном CHoCH.</b></div>
+</section>
+
+<!-- 3. Уровни и полярность -->
+<section>
+  <div class="h"><div class="n">3</div><h2>Уровни и полярность (2.3)</h2></div>
+  <div class="card">
+    <p><b>Уровень = след крупных денег</b> (недоисполненные заявки + память крупного + стопы толпы), а не просто линия. <b>Поддержка</b> — пол (отбой вверх), <b>сопротивление</b> — потолок (отбой вниз).</p>
+    <p><b>Уровень — это ЗОНА, а не нитка.</b> Ведём по кластеру тел свечей, хвосты торчат.</p>
+    <p class="muted"><b class="accent">Контринтуитив:</b> первое касание самое сильное; частые тесты <b>СЪЕДАЮТ</b> заявки и ослабляют уровень.</p>
+  </div>
+  <div class="law" style="margin-top:14px">
+    <div class="lbl">💠 Полярность — сердце урока</div>
+    <div class="big" style="margin-bottom:16px">Пробитый уровень <b style="color:var(--warn)">меняет роль</b>: сопротивление ↔ поддержка. Выбитые продавцы закрываются/переворачиваются — потолок становится полом.</div>
+    <div class="formula">
+      <div class="step"><div class="k"><span class="s">①</span> отбой</div><div class="v">уровень держит</div><small>цена отскочила</small></div>
+      <div class="step accb"><div class="k"><span class="s">②</span> пробой</div><div class="v">закрытие ЗА уровнем</div><small>не прокол тенью</small></div>
+      <div class="step"><div class="k"><span class="s">③</span> ретест</div><div class="v">возврат с др. стороны</div><small>роль сменилась</small></div>
+    </div>
+  </div>
+  <div class="mnemo">Полярность живёт в сетапе <b>BOS + ретест</b> (Сетап 3 в Модуле 4). Это самый чистый вход по тренду.</div>
+</section>
+
+<!-- 4. Зоны и ликвидность -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Зоны спроса/предложения и ликвидность (2.4)</h2></div>
+  <div class="card">
+    <p><b>Уровень (2.3) = память касаний. Зона (2.4) = основание импульса.</b> Уровень — горизонталь по кластеру касаний; зона — прямоугольник у базы резкого, почти вертикального движения (ушла резко и ОДИН раз).</p>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="side up">
+      <h3>🟠 Зона спроса (Demand)</h3>
+      <ul>
+        <li>База <b>ПОД</b> сильным импульсом вверх</li>
+        <li>Здесь <b>крупный купил</b></li>
+        <li>Ждём отсюда <b>лонг</b></li>
+      </ul>
+      <div class="out">рисуем прямоугольник по базовой свече</div>
+    </div>
+    <div class="side down">
+      <h3>🟣 Зона предложения (Supply)</h3>
+      <ul>
+        <li>База <b>НАД</b> сильным импульсом вниз</li>
+        <li>Здесь <b>крупный продал</b></li>
+        <li>Ждём отсюда <b>шорт</b></li>
+      </ul>
+      <div class="out">тянем зону вправо как барьер</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <p><b class="accent">Контринтуитив (как с уровнем):</b> свежая, не тестированная зона — самая сильная; каждый возврат её ослабляет (заявки исполняются, топливо кончается).</p>
+    <p><b>Круглое число</b> = цена с нулями (BTC 100k/90k/70k, ETH 4000/3000). Психология толпы: <b>магнит + барьер + гнездо стопов</b>. Это усилитель (конфлюенс), <b>НЕ синоним сильного уровня.</b></p>
+    <p><b>Ликвидность</b> = скопление стопов: под равными минимумами (<b>equal lows</b>, стопы лонгистов), над равными максимумами (<b>equal highs</b>, стопы шортистов), у круглых чисел, за краями боковика. «Равные» экстремумы = ровная полка, куда цена идёт снять стопы фитилём и развернуться.</p>
+  </div>
+</section>
+
+<!-- Ловушки -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Ловушки (твои разобранные ошибки)</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">Круглое ≠ сильный уровень</div>
+      <p>Круглое число (нули) <span class="neq">≠</span> «сильный уровень» (борьба/касания). Круглое — <b>усилитель</b>, а не сам сигнал. Не называть любой заметный уровень «круглым».</p>
+    </div>
+    <div class="trap">
+      <div class="no">Уровень = зона, не нитка</div>
+      <p>Один тонкий пиксель — иллюзия точности. Веди уровень <b>зоной</b> по кластеру тел; хвосты (фитили) торчат за границу — это норма.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Прокол ≠ пробой</div>
+      <p>Событие — <b>только по ЗАКРЫТИЮ</b> свечи за уровнем. Длинный фитиль сквозь уровень = <b>снятие ликвидности</b>, а не пробой. Ждём закрытие.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Откат ≠ разворот</div>
+      <p>Пока структура держит <b>HH + HL</b> (аптренд) — это откат, тренд жив. Разворот начинается только со слома опоры (<b>CHoCH</b>).</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Структура:</b> импульс + коррекция, тренд = лестница. <b>Откат ≠ разворот.</b></li>
+      <li><b>Аптренд = HH + HL</b> (🟠, только лонги) · <b>Даунтренд = LH + LL</b> (🟣, только шорты) · Флэт = EQH/EQL.</li>
+      <li><b>BOS</b> — слом по тренду (продолжение). <b>CHoCH</b> — слом против тренда (1-й признак разворота).</li>
+      <li>Разворот: аптренд → CHoCH (слом HL) → LH → BOS вниз (пробой LL) → даунтренд.</li>
+      <li><b>Уровень</b> = след крупных денег, ведём <b>зоной</b>. Первое касание сильнее, частые тесты ослабляют.</li>
+      <li><b>Полярность:</b> пробитый уровень меняет роль (сопротивление ↔ поддержка). Живёт в BOS + ретест.</li>
+      <li><b>Зона спроса 🟠</b> — база под импульсом вверх; <b>зона предложения 🟣</b> — база над импульсом вниз. Свежая зона сильнее.</li>
+      <li><b>Круглое число</b> — усилитель (магнит/стопы), не синоним сильного уровня.</li>
+      <li><b>Ликвидность</b> — под equal lows / над equal highs / у круглых / за краями боковика.</li>
+      <li>Событие структуры — <b>по закрытию</b>. Прокол тенью = снятие ликвидности.</li>
+    </ul>
+  </div>
+</section>
+
+<a class="jump" href="patterns-cheatsheet.html">
+  <span class="arw">→</span>
+  <b>Свечи-сигналы (урок 2.5)</b> — пин-бар, поглощение, inside bar, доджи, PPR, Fakey — вынесены в отдельную шпаргалку.
+</a>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Модуль 2</div>
+  Метод: чистый график → <b>структура → уровни</b> → паттерн от уровня.<br>
+  Соседние: <a class="navlink" href="index.html">все шпаргалки</a> · <a class="navlink" href="patterns-cheatsheet.html">свечи-сигналы</a> · <a class="navlink" href="m3-context.html">Модуль 3</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

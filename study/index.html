@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалки — Крипто-трейдинг по Price Action</title>
+<style>
+  :root{
+    --up:#ff8c1a; --up-dim:#ff8c1a22; --up-bd:#ff8c1a55;
+    --down:#a855f7; --down-dim:#a855f722; --down-bd:#a855f755;
+    --bg:#0d1017; --card:#161b26; --card2:#1d2432; --line:#2a3242;
+    --txt:#e7ecf5; --muted:#93a0b5; --accent:#4fd1c5; --warn:#ffd23f;
+    --done:#3ddc84;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  a{text-decoration:none;color:inherit}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:36px 18px 80px;max-width:1080px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  header{text-align:center;margin-bottom:32px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:32px;line-height:1.15;font-weight:800;margin-bottom:10px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto}
+  .method{margin:18px auto 0;max-width:720px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-size:14px;color:var(--muted)}
+  .method b{color:var(--txt)}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted)}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  .secttl{display:flex;align-items:center;gap:12px;margin:36px 0 16px}
+  .secttl h2{font-size:19px;font-weight:700}
+  .secttl .line{flex:1;height:1px;background:var(--line)}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+
+  .mod{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;transition:transform .12s ease,border-color .12s ease;position:relative;overflow:hidden}
+  .mod.live:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .mod .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .mod .num{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .mod h3{font-size:19px;font-weight:800;margin-bottom:6px}
+  .mod .desc{font-size:14px;color:var(--muted);margin-bottom:14px}
+  .status{font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:20px;white-space:nowrap}
+  .status.done{color:var(--done);background:#3ddc8418;border:1px solid #3ddc8455}
+  .status.soon{color:var(--muted);background:var(--card2);border:1px solid var(--line)}
+  .grade{color:var(--warn);font-weight:800}
+
+  .links{display:flex;flex-wrap:wrap;gap:8px}
+  .lk{font-size:13px;font-weight:700;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--txt);display:inline-flex;align-items:center;gap:6px}
+  .lk:hover{border-color:var(--accent);color:var(--accent)}
+  .lk.main{background:var(--accent);color:#06231f;border-color:var(--accent)}
+  .lk.main:hover{color:#06231f;filter:brightness(1.08)}
+  .mod.soon{opacity:.6}
+  .mod.soon .lk{opacity:.5;pointer-events:none}
+
+  .theme-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.theme-row{grid-template-columns:1fr}}
+  .th{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;transition:transform .12s ease,border-color .12s ease}
+  .th:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .th .ic{font-size:24px;margin-bottom:8px}
+  .th h4{font-size:16px;font-weight:800;margin-bottom:4px}
+  .th p{font-size:13px;color:var(--muted)}
+  .th .from{margin-top:8px;font-size:11.5px;color:var(--accent);font-weight:700}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Учебный проект · Павел</div>
+  <h1>Шпаргалки — <span class="em">Price Action</span></h1>
+  <p class="sub">Всё, что прошли, — в одном месте. Настенные карточки по каждому модулю и по сложным темам. Открываются офлайн.</p>
+  <div class="method"><b>Метод:</b> чистый график → структура (price action) → уровни → <b>паттерн ОТ уровня</b>. Рынок — крипта (BTC/ETH), только демо. Плечо не торгуем.</div>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост (close &gt; open)</span>
+    <span><i class="dot d"></i> 🟣 падение (close &lt; open)</span>
+  </div>
+</header>
+
+<!-- Справочник — точка входа -->
+<a class="mod live" href="reference.html" style="display:block;border-color:var(--accent);background:linear-gradient(135deg,#161b26,#13272a)">
+  <div class="top">
+    <span class="num">🔎 Справочник</span>
+    <span class="status" style="color:var(--accent);background:#4fd1c518;border:1px solid #4fd1c555">поиск по 77 правилам</span>
+  </div>
+  <h3>Как правильно — быстрый ответ</h3>
+  <div class="desc">Не помнишь, в каком листе правило про стоп, цель или переход на H1? Набери слово — справочник покажет всё по теме со ссылками на подробности. <b style="color:var(--txt)">Начинай отсюда.</b></div>
+  <div class="links"><span class="lk main">Открыть справочник →</span></div>
+</a>
+
+<!-- Модули -->
+<div class="secttl"><h2>По модулям</h2><div class="line"></div></div>
+<div class="grid">
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 1</span><span class="status done">✅ сдан · экз. 19/20</span></div>
+    <h3>Как устроен крипторынок</h3>
+    <div class="desc">Спот vs перп, что двигает цену, ликвидность, сессии, чем крипта отличается.</div>
+    <div class="links"><a class="lk main" href="m1-market.html">Открыть лист →</a></div>
+  </div>
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 2</span><span class="status done">✅ сдан · экз. 17/20</span></div>
+    <h3>Чтение графика</h3>
+    <div class="desc">Структура (HH/HL/LH/LL), BOS и CHoCH, уровни и полярность, зоны спроса/предложения.</div>
+    <div class="links">
+      <a class="lk main" href="m2-chart.html">Открыть лист →</a>
+      <a class="lk" href="patterns-cheatsheet.html">🕯 Свечи-сигналы</a>
+    </div>
+  </div>
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 3</span><span class="status done">✅ сдан · экз. 18/20</span></div>
+    <h3>Контекст рынка</h3>
+    <div class="desc">Мультитаймфрейм, BTC-доминация, funding, Open Interest, ликвидации и heatmap.</div>
+    <div class="links">
+      <a class="lk main" href="m3-context.html">Открыть лист →</a>
+      <a class="lk" href="funding-cheatsheet.html">📈 Funding</a>
+      <a class="lk" href="derivatives-cheatsheet.html">🔥 OI / ликвидации</a>
+    </div>
+  </div>
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 4</span><span class="status done">✅ сдан · экз. 17/20</span></div>
+    <h3>Система: входы и риск</h3>
+    <div class="desc">Формула входа и конфлюенс, 4 сетапа, риск на сделку, R:R, лимиты, ордера, плечо, чек-лист.</div>
+    <div class="links">
+      <a class="lk main" href="m4-system.html">Открыть лист →</a>
+      <a class="lk" href="calc.html#position">🧮 Калькулятор</a>
+      <a class="lk" href="entry-checklist.html">✅ Чек-лист</a>
+    </div>
+  </div>
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 5</span><span class="status soon">🔵 в процессе</span></div>
+    <h3>Практика: гипотезы и демо</h3>
+    <div class="desc">5.1 наблюдение вживую и гипотезы ЕСЛИ→ТО — <span class="grade">18/20</span>. Впереди 5.2 демо-форвард (10–15 сделок), открывается после плейбука.</div>
+    <div class="links"><a class="lk" href="d1-h1-cheatsheet.html">🧭 7 шагов D1→H1</a></div>
+  </div>
+
+  <div class="mod live">
+    <div class="top"><span class="num">Модуль 6</span><span class="status soon">🔵 в процессе</span></div>
+    <h3>Система и эдж</h3>
+    <div class="desc">6.3 управление сделкой — <span class="grade">17/20</span>. Дальше по порядку: 6.1 бэктест по истории → 6.2 метрики → 6.4 плейбук → 5.2 демо → 6.5 реал.</div>
+    <div class="links"><a class="lk" href="../journal/backtest.html">📊 Бэктест</a></div>
+  </div>
+
+</div>
+
+<!-- Тематические -->
+<div class="secttl"><h2>Глубокие темы</h2><div class="line"></div></div>
+<div class="theme-row">
+  <a class="th" href="zones-cheatsheet.html">
+    <div class="ic">🧱</div>
+    <h4>Разметка зон</h4>
+    <p>Алгоритм подъёма с пустого графика (8 шагов), от импульса не от толкучки, где верх/низ зоны, ловушки.</p>
+    <div class="from">из Модуля 2 · углубление 2.3–2.4</div>
+  </a>
+  <a class="th" href="patterns-cheatsheet.html">
+    <div class="ic">🕯</div>
+    <h4>Свечи-сигналы</h4>
+    <p>Пин-бар, поглощение, inside bar, доджи, PPR, Fakey. Триггеры входа.</p>
+    <div class="from">из Модуля 2 · урок 2.5</div>
+  </a>
+  <a class="th" href="funding-cheatsheet.html">
+    <div class="ic">📈</div>
+    <h4>Funding rate</h4>
+    <p>Термометр толпы: знак, главный закон, три роли, ловушки.</p>
+    <div class="from">из Модуля 3 · урок 3.3</div>
+  </a>
+  <a class="th" href="derivatives-cheatsheet.html">
+    <div class="ic">🔥</div>
+    <h4>OI · ликвидации · heatmap</h4>
+    <p>Сколько денег, где топливо, куда тянет цену. 4 комбо цена×OI.</p>
+    <div class="from">из Модуля 3 · урок 3.4</div>
+  </a>
+  <a class="th" href="d1-h1-cheatsheet.html">
+    <div class="ic">🧭</div>
+    <h4>Когда спускаться на H1</h4>
+    <p>D1 = где и куда, H1 = когда. Правило 3 замков, чтобы не путаться.</p>
+    <div class="from">мультитаймфрейм · 3.1 + М4</div>
+  </a>
+</div>
+
+<!-- Инструменты -->
+<div class="secttl"><h2>Инструменты</h2><div class="line"></div></div>
+<div class="theme-row">
+  <a class="th" href="entry-checklist.html">
+    <div class="ic">✅</div>
+    <h4>Чек-лист входа</h4>
+    <p>Интерактив: отмечаешь такты ⓪①②③ + конфлюенс + дисциплину → живой вердикт «вход / нет».</p>
+    <div class="from">из Модуля 4 · уроки 4.1 + 4.5</div>
+  </a>
+  <a class="th" href="calc.html">
+    <div class="ic">🧮</div>
+    <h4>Калькуляторы</h4>
+    <p>Все расчёты в одном месте: позиция и R:R · сетка круглых от цены · дистанция до уровня в дневных ходах.</p>
+    <div class="from">уроки 4.4 · 2.4 · реп №15</div>
+  </a>
+  <a class="th" href="../journal/journal.html">
+    <div class="ic">📓</div>
+    <h4>Журнал сделок</h4>
+    <p>Калькулятор, чек-лист 14 пунктов, светофор «2 стопа подряд», статистика win rate и R.</p>
+    <div class="from">нужен на демо-форварде · 5.2</div>
+  </a>
+  <a class="th" href="../journal/backtest.html">
+    <div class="ic">📊</div>
+    <h4>Бэктест сетапа</h4>
+    <p>Правила прогона, авторасчёт стопа/R:R/комиссии в R, статистика выборки: win rate, expectancy, худшая серия.</p>
+    <div class="from">из Модуля 6 · урок 6.1</div>
+  </a>
+</div>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

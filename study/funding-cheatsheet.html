@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка 3.3 — Funding rate</title>
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;
+    max-width:1080px;
+    margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px}
+  p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+
+  /* два столбца знака funding */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .side{border-radius:14px;padding:20px;border:1px solid}
+  .side.plus{background:var(--down-dim);border-color:var(--down-bd)}
+  .side.minus{background:var(--up-dim);border-color:var(--up-bd)}
+  .side .sign{font-size:34px;font-weight:900;line-height:1}
+  .side.plus .sign{color:var(--down)} .side.minus .sign{color:var(--up)}
+  .side h3{font-size:15px;margin:8px 0 12px;font-weight:700}
+  .side ul{list-style:none;font-size:14.5px}
+  .side li{padding:4px 0 4px 20px;position:relative;color:var(--txt)}
+  .side li::before{content:"›";position:absolute;left:2px;color:var(--muted);font-weight:800}
+  .side .out{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-weight:700;font-size:14.5px}
+  .side.plus .out{color:var(--down)} .side.minus .out{color:var(--up)}
+
+  /* главный закон */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px 24px 20px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:18px;position:relative}
+  .flow{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative}
+  @media(max-width:680px){.flow{grid-template-columns:1fr}}
+  .fbox{border-radius:12px;padding:16px;border:1px solid}
+  .fbox.d{background:var(--down-dim);border-color:var(--down-bd)}
+  .fbox.u{background:var(--up-dim);border-color:var(--up-bd)}
+  .fbox .top{font-weight:800;margin-bottom:6px;font-size:15px}
+  .fbox.d .top{color:var(--down)} .fbox.u .top{color:var(--up)}
+  .fbox .arw{font-size:13px;color:var(--muted);line-height:1.5}
+  .fbox .res{margin-top:8px;font-weight:800;font-size:15px}
+  .fbox.d .res{color:var(--down)} .fbox.u .res{color:var(--up)}
+
+  /* роли */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:680px){.roles{grid-template-columns:1fr}}
+  .role{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .role .rt{font-weight:800;font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .role.win{border-color:var(--up-bd)} .role.win .rt{color:var(--up)}
+  .role.veto{border-color:var(--down-bd)} .role.veto .rt{color:var(--down)}
+  .role.neu .rt{color:var(--muted)}
+  .role p{font-size:14px;color:var(--muted)}
+  .role p b{color:var(--txt)}
+
+  /* формула */
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 140px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s0{color:var(--warn)} .step .s{color:var(--accent);font-weight:800}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+  .step.ctx{border-color:var(--warn)}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  /* карточка-итог */
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 3 · Урок 3.3 · Контекст рынка</div>
+  <h1>Funding rate — <span class="em">термометр толпы</span></h1>
+  <p class="sub">Не вход, а контекст. Показывает, на какой стороне столпился народ с плечом — и, значит, где лежит его ликвидность.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / движение вверх</span>
+    <span><i class="dot d"></i> 🟣 падение / движение вниз</span>
+  </div>
+</header>
+
+<!-- 1. Что это -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Что это и зачем нам</h2></div>
+  <div class="card">
+    <p>Мы торгуем <b>спот без плеча</b>. Но толпа с плечом сидит в перпах и <b>оставляет следы в цифрах</b> — funding один из них.</p>
+    <p><b>Funding = периодический платёж между лонгами и шортами</b>, который удерживает цену перпа рядом со спотом. Периодичность ~8 ч; <span class="accent">на OKX — 3 раза в сутки</span>. Платит бо́льшая, «жадная» сторона. Это не комиссия биржи — деньги идут из кармана одной толпы в карман другой.</p>
+    <p class="muted">Читаем как <b>термометр настроения</b>. Прямое продолжение закона М1: <i>цена движется от ликвидности к ликвидности</i> — funding показывает, на какой стороне эта ликвидность накопилась.</p>
+  </div>
+</section>
+
+<!-- 2. Знак -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Знак funding = кто платит</h2></div>
+  <div class="grid2">
+    <div class="side plus">
+      <div class="sign">+</div>
+      <h3>Положительный funding</h3>
+      <ul>
+        <li><b>Лонги платят шортам</b></li>
+        <li>Толпа сидит в <b>лонгах</b></li>
+        <li>Жадность · пере<b>куплено</b></li>
+      </ul>
+      <div class="out">↓ топливо копится ПОД ценой</div>
+    </div>
+    <div class="side minus">
+      <div class="sign">−</div>
+      <h3>Отрицательный funding</h3>
+      <ul>
+        <li><b>Шорты платят лонгам</b></li>
+        <li>Толпа сидит в <b>шортах</b></li>
+        <li>Страх · пере<b>продано</b></li>
+      </ul>
+      <div class="out">↑ топливо копится НАД ценой</div>
+    </div>
+  </div>
+  <div class="mnemo">Запомни просто: <b>знак = кто платит.</b> Плюс → платят лонги (их больше). Минус → платят шорты (их больше).</div>
+</section>
+
+<!-- 3. Главный закон -->
+<section>
+  <div class="h"><div class="n">3</div><h2>Главный закон (контринтуитив)</h2></div>
+  <div class="law">
+    <div class="lbl">🔑 Держать в голове всегда</div>
+    <div class="big">Экстремальный funding = толпа перегрета в одну сторону = <span style="color:var(--warn)">топливо для движения ПРОТИВ толпы.</span></div>
+    <div class="flow">
+      <div class="fbox d">
+        <div class="top">Funding сильно +</div>
+        <div class="arw">все в лонгах → под ценой гора лонг-ликвидаций → цену роняют → каскад принудительных продаж</div>
+        <div class="res">→ каскад ВНИЗ 🟣</div>
+      </div>
+      <div class="fbox u">
+        <div class="top">Funding сильно −</div>
+        <div class="arw">все в шортах → над ценой гора шорт-ликвидаций → цену подбрасывают → short squeeze, выкуп</div>
+        <div class="res">→ squeeze ВВЕРХ 🟠</div>
+      </div>
+    </div>
+  </div>
+  <div class="mnemo">Мнемоника: <b>где сидит толпа — туда она и станет топливом.</b> Все в лонгах → жди вынос вниз. Все в шортах → жди вынос вверх.</div>
+</section>
+
+<!-- 4. Когда работает -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Когда funding вообще говорит</h2></div>
+  <div class="card">
+    <p><b>Только на ЭКСТРЕМУМАХ.</b> 90% времени funding около нуля (фон ±0.01%) — и тогда он <b>молчит</b>, рынок сбалансирован. Сигнал есть, только когда цифра улетела в экстремум и держится там: вот тогда «порох» накоплен.</p>
+    <p class="muted">Это <b>медленный контекст, а не таймер.</b> Говорит «порох есть», но не говорит «когда рванёт» — экстремум может держаться днями. <span class="accent">Спичка = свеча на уровне.</span> Funding заряжает ружьё, на курок жмёт триггер-свеча (③).</p>
+  </div>
+</section>
+
+<!-- 5. Три роли -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Три роли (как BTC и доминация)</h2></div>
+  <div class="roles">
+    <div class="role win">
+      <div class="rt">✓ Усиление</div>
+      <p>Сетап и funding в одну сторону. Бычий сетап в зоне спроса <b>+ funding сильно −</b> (над ценой шорт-ликвидации → топливо вверх). Контекст ЗА лонг.</p>
+    </div>
+    <div class="role veto">
+      <div class="rt">✕ Вето</div>
+      <p>Funding против входа. Хочешь лонг, но funding уже сильно <b>+</b> → <b>толпа УЖЕ вся в лонгах, и ты — часть толпы.</b> Входить = встать под нож.</p>
+    </div>
+    <div class="role neu">
+      <div class="rt">○ Нейтрально</div>
+      <p>Funding около нуля — <b>молчит.</b> Не мешает и не помогает. Смотрим на остальные фильтры контекста.</p>
+    </div>
+  </div>
+  <div class="mnemo"><b>Funding НЕ открывает сделку.</b> Вход всегда даёт свеча на уровне. Funding лишь разрешает / запрещает / усиливает.</div>
+</section>
+
+<!-- 6. Формула -->
+<section>
+  <div class="h"><div class="n">6</div><h2>Куда встаёт в систему</h2></div>
+  <div class="formula">
+    <div class="step ctx">
+      <div class="k"><span class="s0">⓪</span> Контекст</div>
+      <div class="v">BTC → доминация → <span style="color:var(--warn)">funding</span></div>
+      <small>фильтр-вето, НЕ вход</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">①</span> Направление</div>
+      <div class="v">тренд на D1</div>
+      <small>куда: лонг / шорт</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">②</span> Локация</div>
+      <div class="v">зона / уровень D1</div>
+      <small>где имею право входить</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">③</span> Триггер</div>
+      <div class="v">свеча / CHoCH H1</div>
+      <small>когда жму на курок</small>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Ловушки -->
+<section>
+  <div class="h"><div class="n">7</div><h2>Ловушки терминов</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">Разные измерения</div>
+      <p><b>«funding +» <span class="neq">≠</span> «цена растёт».</b> Funding — про <b>настроение и позиции толпы</b>, не про направление цены. Та же ошибка, что «BTC растёт» ≠ «доминация растёт» (3.2). Funding+ = «толпа СИДИТ в лонгах», а часто это как раз топливо вниз.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Не таймер, а термометр</div>
+      <p>Экстремум говорит <b>«порох есть»</b>, а не <b>«рванёт сейчас»</b>. Работает <b>только на экстремумах</b> — фон около нуля игнорируем. Вход всё равно по свече на уровне, funding сам по себе — не сигнал.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Funding</b> = платёж лонги↔шорты (~8ч, OKX 3×/сут), держит перп у спота. Платит бо́льшая сторона.</li>
+      <li><b style="color:var(--down)">+</b> → лонги платят, толпа в лонгах, жадность, перекуплено. <b style="color:var(--up)">−</b> → шорты платят, толпа в шортах, страх, перепродано.</li>
+      <li><b>Главный закон:</b> экстремум = топливо ПРОТИВ толпы (сильно + → вниз 🟣, сильно − → вверх 🟠).</li>
+      <li>Работает <b>только на экстремумах</b>; фон = молчит.</li>
+      <li><b>Медленный контекст, не таймер:</b> «порох есть», курок = свеча.</li>
+      <li><b>Три роли:</b> усиление / вето / нейтрально. Вход не открывает — вход даёт свеча на уровне.</li>
+      <li><b>«funding +» ≠ «цена растёт»</b> — настроение толпы, не направление.</li>
+      <li>Место в системе: ⓪ Контекст (BTC → доминация → <b>funding</b>) → ① → ② → ③.</li>
+      <li>Инструмент — <b>Coinglass</b> (смотрим ежедневно).</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Урок 3.3</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

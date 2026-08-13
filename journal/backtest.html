@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бэктест сетапа — Price Action (D1)</title>
+<style>
+  :root{
+    --bg:#0e0f14; --panel:#16171f; --panel2:#1c1e28; --line:#282b38;
+    --txt:#e7e9ef; --muted:#8b90a3; --up:#f7931a; --down:#7b3ff2;
+    --up-soft:rgba(247,147,26,.14); --down-soft:rgba(123,63,242,.16);
+    --warn:#f2c14e; --ok:#2ec07a; --bad:#e5484d; --accent:#4fd1c5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:14px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:22px;max-width:1180px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 2px} h2{font-size:14px;margin:0 0 12px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .sub{color:var(--muted);font-size:12px;margin-bottom:18px}
+  .grid{display:grid;gap:14px;min-width:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0;overflow:hidden}
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);border-radius:8px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit}
+  input:focus,select:focus,textarea:focus{border-color:var(--up)}
+  .field{flex:1 1 130px;min-width:120px}
+  .field.wide{flex:2 1 260px}
+  button{cursor:pointer;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600}
+  .btn-primary{background:var(--up);color:#1a1206}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  .btn-ghost:hover{border-color:var(--muted)}
+  .btn-danger{background:transparent;border:1px solid var(--line);color:var(--bad);padding:4px 8px;font-size:12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .card .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .card .v{font-size:21px;font-weight:700;margin-top:3px}
+  .card small{color:var(--muted);font-size:11px}
+  .pos{color:var(--ok)} .neg{color:var(--bad)} .neu{color:var(--muted)} .acc{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 9px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+  tbody tr:hover{background:#191b24}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+  .tag.long{background:var(--up-soft);color:var(--up)}
+  .tag.short{background:var(--down-soft);color:var(--down)}
+  .tag.yes{background:rgba(46,192,122,.15);color:var(--ok)}
+  .tag.no{background:rgba(229,72,77,.15);color:var(--bad)}
+  .tag.skip{background:rgba(139,144,163,.15);color:var(--muted)}
+  .calc{background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:12px;margin-top:12px}
+  .calc .row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .calc .c .k{font-size:10px;color:var(--muted);text-transform:uppercase}
+  .calc .c .v{font-size:16px;font-weight:700}
+  .rules{font-size:12.5px;color:var(--muted);line-height:1.65}
+  .rules b{color:var(--txt)}
+  .rules li{margin-bottom:3px}
+  .warn{background:rgba(242,193,78,.09);border:1px solid rgba(242,193,78,.3);color:var(--warn);
+    border-radius:10px;padding:10px 13px;font-size:12.5px;margin-top:10px}
+  .scroll{overflow-x:auto;min-width:0;max-width:100%}
+  td.note{white-space:normal;max-width:240px;min-width:150px;font-size:12px;line-height:1.45}
+  details summary{cursor:pointer;color:var(--accent);font-size:12.5px;margin-bottom:8px}
+  .foot{color:var(--muted);font-size:12px;text-align:center;margin-top:26px;line-height:1.7}
+  .foot a{color:var(--accent)}
+  @media(max-width:600px){ body{padding:14px} .field{flex:1 1 100%} }
+</style>
+</head>
+<body>
+
+<h1>Бэктест сетапа — D1</h1>
+<div class="sub">Урок 6.1 · выборка собирается методом прокрутки: правый край на дату, решение записано ДО прокрутки вправо. Всё считается в <b>R</b>, комиссия внутри R.</div>
+
+<div class="grid">
+
+  <!-- ПРАВИЛА ПРОГОНА -->
+  <div class="panel">
+    <h2>Правила прогона — зафиксированы, менять по ходу нельзя</h2>
+    <div class="rules">
+      <ul style="margin:0;padding-left:18px">
+        <li><b>Сетап 1 — пин-бар от уровня, D1.</b> Один сетап на прогон.</li>
+        <li><b>Локация обязательна:</b> уровень виден слева ДО появления пина (зона спроса/предложения, полярность, круглое ▪ и выше). Пин в пустоте не считается.</li>
+        <li><b>Форма (меряем от диапазона свечи, не «на глаз»):</b> фитиль в сторону уровня <b>≥ 50%</b> диапазона · тело <b>≤ 30%</b> · закрытие в <b>дальней от уровня половине</b> (в дальней трети — «сильный пин»).</li>
+        <li><b>Касание:</b> для зоны фитиль должен войти внутрь, для линии — дойти с допуском <b>0.2% от цены</b>. Не дошёл — не тест.</li>
+        <li><b>Сторона пина совпадает с локацией:</b> у зоны спроса ждём пин на покупку, у зоны предложения — на продажу.</li>
+        <li><b>Направление:</b> по тренду D1 или от границы диапазона во флэте. Против тренда — не берём.</li>
+        <li><b>Вход</b> — открытие следующей свечи · <b>стоп</b> — за кончик фитиля + запас · <b>цель</b> — ближайшее препятствие, о которое цена реально спотыкалась.</li>
+        <li><b>R:R ниже фильтра</b> → сделка не берётся, но случай ЗАПИСЫВАЕТСЯ («не прошла фильтр»).</li>
+        <li><b>Берём все случаи подряд</b> в окне истории, включая неудобные. Пропущенный убыток убивает выборку.</li>
+      </ul>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="field"><label>Запас стопа, % от цены</label><input id="cfgPad" type="text" inputmode="decimal" value="2"></div>
+      <div class="field"><label>Комиссия за круг, %</label><input id="cfgFee" type="text" inputmode="decimal" value="0.1"></div>
+      <div class="field"><label>Фильтр R:R (мин.)</label><input id="cfgRR" type="text" inputmode="decimal" value="2"></div>
+      <div class="field wide"><label>Окно истории</label><input id="cfgWindow" type="text" value="июль 2023 — июль 2026"></div>
+    </div>
+    <div class="warn">Поменял любую цифру в этой панели — это <b>новый прогон</b>, а не правка старого. Сравнивать между собой можно только выборки с одинаковыми правилами.</div>
+  </div>
+
+  <!-- ПРОВЕРКА СВЕЧИ -->
+  <div class="panel">
+    <h2>Шаг 1 — проверка свечи по критериям</h2>
+    <div class="rules" style="margin-bottom:10px">Вбей OHLC свечи и уровень, который она тестирует (для зоны — две границы, для линии хватит одного поля). Считать ничего не надо: критерии проверяются сами.</div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field wide" style="flex:3 1 340px"><label>Вставить строку OHLC (из TradingView / Binance)</label>
+        <input id="cPaste" type="text" placeholder="O30 160.71 H31 045.78 L29 950.00 C30 411.57"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Open</label><input id="cO" type="text" inputmode="decimal"></div>
+      <div class="field"><label>High</label><input id="cH" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Low</label><input id="cL" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Close</label><input id="cC" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Уровень / зона от</label><input id="cLvlA" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Зона до (если зона)</label><input id="cLvlB" type="text" inputmode="decimal"></div>
+    </div>
+    <div class="calc">
+      <div class="row2">
+        <div class="c"><div class="k">Диапазон</div><div class="v" id="cRange">—</div></div>
+        <div class="c"><div class="k">Тело</div><div class="v" id="cBody">—</div></div>
+        <div class="c"><div class="k">Фитиль ↑</div><div class="v" id="cUp">—</div></div>
+        <div class="c"><div class="k">Фитиль ↓</div><div class="v" id="cDn">—</div></div>
+        <div class="c"><div class="k">Тип</div><div class="v" id="cType">—</div></div>
+        <div class="c"><div class="k">Закрытие</div><div class="v" id="cClose">—</div></div>
+      </div>
+    </div>
+    <div class="warn" id="cVerdict" style="margin-top:10px">Введи OHLC.</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn-ghost" id="btnToCase">↓ Перенести в случай</button>
+    </div>
+  </div>
+
+  <!-- ФОРМА -->
+  <div class="panel">
+    <h2>Шаг 2 — новый случай</h2>
+    <div class="row">
+      <div class="field"><label>Дата свечи</label><input id="fDate" type="date"></div>
+      <div class="field"><label>Инструмент</label>
+        <select id="fSym">
+          <option>BTC</option><option>ETH</option><option>SOL</option><option>XRP</option>
+          <option>LINK</option><option>ADA</option><option>LTC</option><option>BNB</option>
+        </select>
+      </div>
+      <div class="field"><label>Сторона</label>
+        <select id="fSide"><option value="long">лонг 🟠</option><option value="short">шорт 🟣</option></select>
+      </div>
+      <div class="field wide"><label>Локация (какой уровень)</label>
+        <select id="fLoc">
+          <option>зона спроса</option><option>зона предложения</option><option>полярность</option>
+          <option>круглое</option><option>граница диапазона</option><option>зона + круглое</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>Кончик фитиля</label><input id="fWick" type="text" inputmode="decimal" placeholder="экстремум пина"></div>
+      <div class="field"><label>Вход (открытие след. свечи)</label><input id="fEntry" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Цель</label><input id="fTarget" type="text" inputmode="decimal"></div>
+      <div class="field"><label>Исход</label>
+        <select id="fRes">
+          <option value="target">цель достигнута</option>
+          <option value="stop">стоп</option>
+          <option value="manual">вышел руками (смерть идеи)</option>
+          <option value="nofilter">не брал — R:R ниже фильтра</option>
+          <option value="notrigger">не брал — условия не сложились</option>
+        </select>
+      </div>
+      <div class="field"><label>Цена выхода (если руками)</label><input id="fExit" type="text" inputmode="decimal"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field wide" style="flex:3 1 320px"><label>Заметка (что было видно, чем закончилось)</label><input id="fNote" type="text" placeholder="напр. пин на demand + круглое, цель — ноябрьский хай"></div>
+    </div>
+
+    <div class="calc">
+      <div class="row2">
+        <div class="c"><div class="k">Стоп (авто)</div><div class="v" id="oStop">—</div></div>
+        <div class="c"><div class="k">Риск (1R)</div><div class="v" id="oRisk">—</div></div>
+        <div class="c"><div class="k">R:R плановый</div><div class="v" id="oRR">—</div></div>
+        <div class="c"><div class="k">Комиссия в R</div><div class="v" id="oFee">—</div></div>
+        <div class="c"><div class="k">Фильтр</div><div class="v" id="oFilter">—</div></div>
+        <div class="c"><div class="k">Итог случая</div><div class="v" id="oR">—</div></div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button class="btn-primary" id="btnAdd">Добавить случай</button>
+      <button class="btn-ghost" id="btnClear">Очистить форму</button>
+    </div>
+  </div>
+
+  <!-- СТАТИСТИКА -->
+  <div class="panel">
+    <h2>Статистика выборки</h2>
+    <div class="cards">
+      <div class="card"><div class="k">Случаев всего</div><div class="v" id="sTotal">0</div><small id="sProgress">появлений сетапа</small></div>
+      <div class="card"><div class="k">Сделок взято</div><div class="v" id="sTrades">0</div><small id="sSkipped">до цели 50 — ещё 50</small></div>
+      <div class="card"><div class="k">Торгуемость</div><div class="v" id="sTradable">—</div><small>доля случаев с R:R ≥ фильтра</small></div>
+      <div class="card"><div class="k">Win rate</div><div class="v" id="sWin">—</div><small id="sWL">0 / 0</small></div>
+      <div class="card"><div class="k">Сумма R</div><div class="v" id="sSum">—</div><small>накопленный итог</small></div>
+      <div class="card"><div class="k">Средний R</div><div class="v" id="sExp">—</div><small>expectancy на сделку</small></div>
+      <div class="card"><div class="k">Средний +R</div><div class="v" id="sAvgW">—</div><small>по выигрышным</small></div>
+      <div class="card"><div class="k">Средний −R</div><div class="v" id="sAvgL">—</div><small>по убыточным</small></div>
+      <div class="card"><div class="k">Худшая серия</div><div class="v" id="sStreak">—</div><small>убытков подряд</small></div>
+    </div>
+    <div class="warn" id="sHint">Метрики читаются с урока 6.2. Пока задача одна — собрать честную выборку.</div>
+  </div>
+
+  <!-- ТАБЛИЦА -->
+  <div class="panel">
+    <h2>Случаи</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Дата</th><th>Инстр.</th><th>Сторона</th><th>Локация</th>
+          <th>Вход</th><th>Стоп</th><th>Цель</th><th>R:R</th><th>Исход</th><th>R</th><th>Заметка</th><th></th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="13" class="neu">Пока пусто — добавь первый случай.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn-ghost" id="btnCsv">Экспорт CSV</button>
+      <button class="btn-ghost" id="btnJson">Экспорт JSON</button>
+      <button class="btn-ghost" id="btnImport">Импорт JSON</button>
+      <input id="fileImport" type="file" accept="application/json" style="display:none">
+      <button class="btn-danger" id="btnWipe">Удалить всё</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  Учебный инструмент · метод: чистый график → уровни → паттерн ОТ уровня.<br>
+  Рядом: <a href="journal.html">журнал сделок</a> · <a href="../study/calc.html">калькуляторы</a> · <a href="../study/index.html">шпаргалки</a>.<br>
+  Данные хранятся только в этом браузере (localStorage). Экспортируй JSON, если чистишь кэш.
+</div>
+
+<script>
+(function(){
+  var KEY = 'backtest-s1-v1', CFGKEY = 'backtest-s1-cfg';
+  var rows = [];
+  var $ = function(id){ return document.getElementById(id); };
+
+  var cfg = {pad:2, fee:0.1, rr:2, window:'июль 2023 — июль 2026'};
+  try{ var c = JSON.parse(localStorage.getItem(CFGKEY)); if(c) cfg = c; }catch(e){}
+  $('cfgPad').value = cfg.pad; $('cfgFee').value = cfg.fee;
+  $('cfgRR').value = cfg.rr; $('cfgWindow').value = cfg.window;
+
+  function saveCfg(){
+    cfg = {pad:num($('cfgPad').value), fee:num($('cfgFee').value),
+           rr:num($('cfgRR').value), window:$('cfgWindow').value};
+    localStorage.setItem(CFGKEY, JSON.stringify(cfg));
+    calc();
+  }
+  ['cfgPad','cfgFee','cfgRR','cfgWindow'].forEach(function(id){ $(id).addEventListener('input', saveCfg); });
+
+  // Терпимый парсер: принимает «30 160,71», «30,585.90», «1 095.78», «0,35»
+  function num(v){
+    if(v === null || v === undefined) return NaN;
+    if(typeof v === 'number') return isFinite(v) ? v : NaN;
+    var s = String(v).replace(/[\s  ']/g, '');
+    if(!s) return NaN;
+    var lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+    if(lc >= 0 && ld >= 0){
+      if(lc > ld) s = s.replace(/\./g, '').replace(/,/g, '.');   // 30.585,90 → 30585.90
+      else        s = s.replace(/,/g, '');                       // 30,585.90 → 30585.90
+    } else if(lc >= 0){
+      var intPart = s.slice(0, lc), decPart = s.slice(lc + 1);
+      if(intPart !== '0' && intPart !== '' && decPart.length === 3 && /^\d+$/.test(decPart))
+        s = s.replace(/,/g, '');                                  // 30,585 → 30585 (разделитель тысяч)
+      else
+        s = s.replace(/,/g, '.');                                 // 0,35 → 0.35
+    }
+    s = s.replace(/[^0-9.\-]/g, '');
+    var n = parseFloat(s);
+    return isFinite(n) ? n : NaN;
+  }
+  function fmt(v, d){ if(!isFinite(v)) return '—'; return v.toLocaleString('ru-RU',{maximumFractionDigits: d === undefined ? 4 : d}); }
+  function r2(v){ return isFinite(v) ? (v >= 0 ? '+' : '') + v.toFixed(2) : '—'; }
+
+  // ---- расчёт текущей формы ----
+  function current(){
+    var side = $('fSide').value, wick = num($('fWick').value),
+        entry = num($('fEntry').value), target = num($('fTarget').value),
+        res = $('fRes').value, exit = num($('fExit').value);
+
+    var pad = isFinite(cfg.pad) ? cfg.pad : 0, fee = isFinite(cfg.fee) ? cfg.fee : 0;
+    var stop = NaN;
+    if(isFinite(wick) && isFinite(entry)){
+      var padAbs = entry * pad / 100;
+      stop = side === 'long' ? wick - padAbs : wick + padAbs;
+    }
+    var risk = (isFinite(stop) && isFinite(entry)) ? Math.abs(entry - stop) : NaN;
+    var reward = (isFinite(target) && isFinite(entry)) ? Math.abs(target - entry) : NaN;
+    var rr = (risk > 0) ? reward / risk : NaN;
+    var feeR = (risk > 0) ? (entry * fee / 100) / risk : NaN;   // комиссия за круг, в долях R
+
+    var R = NaN, taken = true;
+    if(res === 'nofilter' || res === 'notrigger'){ R = 0; taken = false; }
+    else if(res === 'target') R = rr - feeR;
+    else if(res === 'stop')   R = -1 - feeR;
+    else if(res === 'manual'){
+      if(isFinite(exit) && risk > 0){
+        var raw = (side === 'long' ? (exit - entry) : (entry - exit)) / risk;
+        R = raw - feeR;
+      }
+    }
+    return {side:side, wick:wick, entry:entry, target:target, stop:stop, risk:risk,
+            rr:rr, feeR:feeR, res:res, exit:exit, R:R, taken:taken,
+            passes: isFinite(rr) ? rr >= cfg.rr : null};
+  }
+
+  function calc(){
+    var c = current();
+    $('oStop').textContent = fmt(c.stop);
+    $('oRisk').textContent = fmt(c.risk);
+    $('oRR').textContent   = isFinite(c.rr) ? '1:' + c.rr.toFixed(2) : '—';
+    $('oFee').textContent  = isFinite(c.feeR) ? '−' + c.feeR.toFixed(3) + 'R' : '—';
+
+    var f = $('oFilter');
+    if(c.passes === null){ f.textContent = '—'; f.className = 'v neu'; }
+    else if(c.passes){ f.textContent = 'проходит'; f.className = 'v pos'; }
+    else { f.textContent = 'НЕ проходит'; f.className = 'v neg'; }
+
+    var o = $('oR');
+    if(!c.taken){ o.textContent = '0.00R'; o.className = 'v neu'; }
+    else if(isFinite(c.R)){ o.textContent = r2(c.R) + 'R'; o.className = 'v ' + (c.R >= 0 ? 'pos' : 'neg'); }
+    else { o.textContent = '—'; o.className = 'v neu'; }
+  }
+  ['fSide','fWick','fEntry','fTarget','fRes','fExit'].forEach(function(id){
+    $(id).addEventListener('input', calc); $(id).addEventListener('change', calc);
+  });
+
+  // ---- проверка формы свечи ----
+  var candle = null;
+
+  function checkCandle(){
+    var O = num($('cO').value), H = num($('cH').value), L = num($('cL').value), C = num($('cC').value);
+    var a = num($('cLvlA').value), b = num($('cLvlB').value);
+    var v = $('cVerdict');
+    candle = null;
+
+    if(!(isFinite(O) && isFinite(H) && isFinite(L) && isFinite(C)) || H <= L){
+      ['cRange','cBody','cUp','cDn','cType','cClose'].forEach(function(id){ $(id).textContent = '—'; $(id).className = 'v neu'; });
+      v.textContent = 'Введи OHLC.'; return;
+    }
+
+    var range = H - L,
+        body = Math.abs(C - O),
+        up = H - Math.max(O, C),
+        dn = Math.min(O, C) - L,
+        mid = L + range / 2,
+        third = range / 3;
+
+    var bearish = up >= dn;                 // длинный фитиль сверху → пин на продажу
+    var wick = bearish ? up : dn;
+    var side = bearish ? 'short' : 'long';
+
+    var okWick = wick / range >= 0.5;
+    var okBody = body / range <= 0.3;
+    var okClose = bearish ? (C < mid) : (C > mid);
+    var strong  = bearish ? (C < L + third) : (C > H - third);
+
+    $('cRange').textContent = fmt(range, 2);
+    $('cBody').textContent  = (body / range * 100).toFixed(0) + '%';
+    $('cBody').className    = 'v ' + (okBody ? 'pos' : 'neg');
+    $('cUp').textContent    = (up / range * 100).toFixed(0) + '%';
+    $('cDn').textContent    = (dn / range * 100).toFixed(0) + '%';
+    ($('cUp')).className = 'v ' + (bearish && okWick ? 'pos' : 'neu');
+    ($('cDn')).className = 'v ' + (!bearish && okWick ? 'pos' : 'neu');
+    $('cType').textContent  = bearish ? 'пин на продажу 🟣' : 'пин на покупку 🟠';
+    $('cType').className    = 'v ' + (bearish ? 'neg' : 'pos');
+    $('cClose').textContent = okClose ? (strong ? 'дальняя треть' : 'дальняя половина') : 'на стороне уровня';
+    $('cClose').className   = 'v ' + (okClose ? 'pos' : 'neg');
+
+    // касание уровня
+    var touch = null, tol = C * 0.002;
+    if(isFinite(a)){
+      var lo = isFinite(b) ? Math.min(a, b) : a, hi = isFinite(b) ? Math.max(a, b) : a;
+      touch = bearish ? (H >= lo - tol) : (L <= hi + tol);
+    }
+
+    var bad = [];
+    if(!okWick) bad.push('фитиль ' + (wick / range * 100).toFixed(0) + '% — нужно ≥50% диапазона');
+    if(!okBody) bad.push('тело ' + (body / range * 100).toFixed(0) + '% — нужно ≤30%');
+    if(!okClose) bad.push('закрытие на стороне уровня, а должно быть в дальней половине');
+    if(touch === false) bad.push('уровень не тронут (допуск 0.2% = ' + fmt(tol, 2) + ')');
+
+    if(bad.length){
+      v.className = 'warn'; v.style.color = '';
+      v.innerHTML = '✗ <b>Случай не берём.</b> ' + bad.join(' · ') +
+        '<br>Запиши его исходом «не брал — условия не сложились», если хочешь считать частоту брака.';
+    } else {
+      candle = {side:side, wick: bearish ? H : L, close:C, strong:strong};
+      v.className = 'warn';
+      v.innerHTML = '✓ <b>Форма и локация подходят</b> — пин ' + (bearish ? 'на продажу (шорт)' : 'на покупку (лонг)') +
+        (strong ? ', закрытие в дальней трети — сильный' : '') +
+        (touch === null ? '. <b>Уровень не задан</b> — впиши его, локация обязательна.' : '.') +
+        ' Дальше: вход = открытие следующей свечи, цель = ближайшее препятствие. Жми «Перенести в случай».';
+    }
+  }
+  ['cO','cH','cL','cC','cLvlA','cLvlB'].forEach(function(id){ $(id).addEventListener('input', checkCandle); });
+
+  // вставка строки вида "O30 160.71 H31 045.78 L29 950.00 C30 411.57"
+  $('cPaste').addEventListener('input', function(){
+    var s = $('cPaste').value;
+    if(!s.trim()) return;
+    var m = s.match(/O[:\s]*([\d.,  ']+?)\s*H[:\s]*([\d.,  ']+?)\s*L[:\s]*([\d.,  ']+?)\s*C[:\s]*([\d.,  ']+)/i);
+    if(!m){                                     // без букв — просто четыре числа подряд
+      var parts = s.match(/[\d][\d.,  ']*/g);
+      if(parts && parts.length >= 4) m = [null, parts[0], parts[1], parts[2], parts[3]];
+    }
+    if(!m) return;
+    var vals = [num(m[1]), num(m[2]), num(m[3]), num(m[4])];
+    if(vals.some(function(v){ return !isFinite(v); })) return;
+    ['cO','cH','cL','cC'].forEach(function(id, i){ $(id).value = vals[i]; });
+    checkCandle();
+  });
+
+  $('btnToCase').addEventListener('click', function(){
+    if(!candle){ alert('Свеча не прошла критерии (или OHLC не введены) — переносить нечего.'); return; }
+    $('fSide').value = candle.side;
+    $('fWick').value = candle.wick;
+    $('fLoc').value = candle.side === 'short' ? 'зона предложения' : 'зона спроса';   // можно поменять вручную
+    calc();
+    $('fEntry').focus();
+  });
+
+  // ---- хранилище ----
+  function load(){ try{ rows = JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ rows = []; } }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(rows)); }
+
+  function add(){
+    var c = current();
+    if(!$('fDate').value){ alert('Укажи дату свечи.'); return; }
+    if(c.taken && !isFinite(c.R)){ alert('Не хватает чисел: для взятой сделки нужны фитиль, вход и цель (а для выхода руками — цена выхода).'); return; }
+    rows.push({
+      date: $('fDate').value, sym: $('fSym').value, side: c.side, loc: $('fLoc').value,
+      wick: c.wick, entry: c.entry, stop: c.stop, target: c.target,
+      rr: c.rr, res: c.res, exit: c.exit, R: c.taken ? c.R : 0, taken: c.taken,
+      note: $('fNote').value
+    });
+    rows.sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    save(); render();
+    ['fWick','fEntry','fTarget','fExit','fNote'].forEach(function(id){ $(id).value = ''; });
+    calc();
+  }
+  $('btnAdd').addEventListener('click', add);
+  $('btnClear').addEventListener('click', function(){
+    ['fWick','fEntry','fTarget','fExit','fNote'].forEach(function(id){ $(id).value = ''; });
+    calc();
+  });
+
+  var RESNAME = {target:'цель', stop:'стоп', manual:'руками', nofilter:'фильтр', notrigger:'не сложилось'};
+
+  function render(){
+    var tb = $('tbody');
+    if(!rows.length){
+      tb.innerHTML = '<tr><td colspan="13" class="neu">Пока пусто — добавь первый случай.</td></tr>';
+    } else {
+      tb.innerHTML = rows.map(function(r, i){
+        var tag = r.taken
+          ? '<span class="tag ' + (r.R >= 0 ? 'yes' : 'no') + '">' + RESNAME[r.res] + '</span>'
+          : '<span class="tag skip">' + RESNAME[r.res] + '</span>';
+        return '<tr>' +
+          '<td class="neu">' + (i+1) + '</td>' +
+          '<td>' + r.date + '</td>' +
+          '<td><b>' + r.sym + '</b></td>' +
+          '<td><span class="tag ' + r.side + '">' + (r.side === 'long' ? 'лонг' : 'шорт') + '</span></td>' +
+          '<td class="neu">' + r.loc + '</td>' +
+          '<td>' + fmt(r.entry) + '</td><td>' + fmt(r.stop) + '</td><td>' + fmt(r.target) + '</td>' +
+          '<td>' + (isFinite(r.rr) ? '1:' + r.rr.toFixed(2) : '—') + '</td>' +
+          '<td>' + tag + '</td>' +
+          '<td class="' + (!r.taken ? 'neu' : (r.R >= 0 ? 'pos' : 'neg')) + '">' + (r.taken ? r2(r.R) : '0.00') + '</td>' +
+          '<td class="neu note">' + (r.note || '') + '</td>' +
+          '<td><button class="btn-danger" data-del="' + i + '">✕</button></td>' +
+        '</tr>';
+      }).join('');
+      Array.prototype.forEach.call(tb.querySelectorAll('[data-del]'), function(b){
+        b.addEventListener('click', function(){
+          rows.splice(parseInt(b.getAttribute('data-del'), 10), 1); save(); render();
+        });
+      });
+    }
+    stats();
+  }
+
+  function stats(){
+    var taken = rows.filter(function(r){ return r.taken; });
+    var wins = taken.filter(function(r){ return r.R > 0; });
+    var loss = taken.filter(function(r){ return r.R <= 0; });
+    var sum = taken.reduce(function(a,r){ return a + r.R; }, 0);
+
+    $('sTotal').textContent = rows.length;
+    $('sProgress').textContent = 'появлений сетапа · не взято ' + (rows.length - taken.length);
+    $('sTrades').textContent = taken.length;
+    $('sSkipped').textContent = taken.length >= 50 ? 'цель 50 достигнута ✓' : 'до цели 50 — ещё ' + (50 - taken.length);
+    $('sTradable').textContent = rows.length ? (taken.length / rows.length * 100).toFixed(0) + '%' : '—';
+    $('sTradable').className = 'v ' + (rows.length ? 'acc' : 'neu');
+
+    if(taken.length){
+      var wr = wins.length / taken.length * 100;
+      $('sWin').textContent = wr.toFixed(0) + '%';
+      $('sWin').className = 'v ' + (wr >= 40 ? 'pos' : 'neu');
+      $('sWL').textContent = wins.length + ' / ' + loss.length;
+      $('sSum').textContent = r2(sum) + 'R';
+      $('sSum').className = 'v ' + (sum >= 0 ? 'pos' : 'neg');
+      var exp = sum / taken.length;
+      $('sExp').textContent = r2(exp) + 'R';
+      $('sExp').className = 'v ' + (exp >= 0 ? 'pos' : 'neg');
+      $('sAvgW').textContent = wins.length ? r2(wins.reduce(function(a,r){return a+r.R;},0) / wins.length) + 'R' : '—';
+      $('sAvgL').textContent = loss.length ? r2(loss.reduce(function(a,r){return a+r.R;},0) / loss.length) + 'R' : '—';
+      var st = 0, best = 0;
+      taken.forEach(function(r){ if(r.R <= 0){ st++; if(st > best) best = st; } else st = 0; });
+      $('sStreak').textContent = best;
+    } else {
+      ['sWin','sSum','sExp','sAvgW','sAvgL','sStreak'].forEach(function(id){ $(id).textContent = '—'; $(id).className = 'v neu'; });
+      $('sWL').textContent = '0 / 0';
+    }
+  }
+
+  // ---- экспорт / импорт ----
+  function download(name, text, type){
+    var b = new Blob([text], {type: type});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = name; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+  }
+  $('btnJson').addEventListener('click', function(){
+    download('backtest-s1.json', JSON.stringify({cfg:cfg, rows:rows}, null, 2), 'application/json');
+  });
+  $('btnCsv').addEventListener('click', function(){
+    var head = ['дата','инструмент','сторона','локация','фитиль','вход','стоп','цель','R:R','исход','R','заметка'];
+    var lines = [head.join(';')].concat(rows.map(function(r){
+      return [r.date, r.sym, r.side, r.loc, r.wick, r.entry, r.stop, r.target,
+              isFinite(r.rr) ? r.rr.toFixed(2) : '', RESNAME[r.res], r.taken ? r.R.toFixed(2) : '0',
+              (r.note || '').replace(/;/g, ',')].join(';');
+    }));
+    download('backtest-s1.csv', '﻿' + lines.join('\n'), 'text/csv;charset=utf-8');
+  });
+  $('btnImport').addEventListener('click', function(){ $('fileImport').click(); });
+  $('fileImport').addEventListener('change', function(e){
+    var f = e.target.files[0]; if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        var d = JSON.parse(rd.result);
+        if(d.rows){
+          if(rows.length && confirm('В таблице уже ' + rows.length + ' случаев.\nOK — добавить импортируемые к ним.\nОтмена — заменить всё импортом.'))
+            rows = rows.concat(d.rows);
+          else
+            rows = d.rows;
+          rows.sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+          save(); render(); alert('Готово. Случаев в таблице: ' + rows.length);
+        }
+      }catch(err){ alert('Не удалось прочитать файл.'); }
+    };
+    rd.readAsText(f);
+  });
+  $('btnWipe').addEventListener('click', function(){
+    if(confirm('Удалить все ' + rows.length + ' случаев? Экспорт сделан?')){ rows = []; save(); render(); }
+  });
+
+  load(); render(); calc();
+})();
+</script>
+
+</body>
+</html>

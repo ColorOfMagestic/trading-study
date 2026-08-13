@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка — Как размечать зоны (спрос / предложение)</title>
+
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;max-width:1080px;margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:680px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px} p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+  .badge-u{color:var(--up);font-weight:800}
+  .badge-d{color:var(--down);font-weight:800}
+
+  /* закон */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.45;position:relative}
+  .law .big .neq{color:var(--down)}
+  .law .fx{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+  .law .fx .b{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+  .law .fx .b .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .law .fx .b b{color:var(--accent)}
+
+  /* схемы SVG */
+  .diags{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.diags{grid-template-columns:1fr}}
+  .diag{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .diag h3{font-size:16px;font-weight:800;margin-bottom:4px}
+  .diag .cap{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .diag svg{width:100%;height:auto;display:block;background:#12161f;border:1px solid var(--line);border-radius:10px}
+  .diag .note{font-size:13px;color:var(--muted);margin-top:12px}
+  .diag .note b{color:var(--txt)}
+  /* SVG-раскраска */
+  .up-f{fill:var(--up)} .up-s{stroke:var(--up)}
+  .dn-f{fill:var(--down)} .dn-s{stroke:var(--down)}
+  .wick{stroke-width:2.4;stroke-linecap:round}
+  .zone-u{fill:var(--up);opacity:.16}
+  .zone-d{fill:var(--down);opacity:.16}
+  .zbd-u{stroke:var(--up);stroke-width:1.4;stroke-dasharray:5 4;fill:none}
+  .zbd-d{stroke:var(--down);stroke-width:1.4;stroke-dasharray:5 4;fill:none}
+  .glabel{fill:var(--muted);font:600 11px "Segoe UI",Arial,sans-serif}
+  .gkey{fill:var(--accent);font:700 11px "Segoe UI",Arial,sans-serif}
+  .gimp{fill:var(--warn);font:800 11px "Segoe UI",Arial,sans-serif}
+  .leader{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+
+  /* шаги-алгоритм */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:760px){.steps{grid-template-columns:1fr 1fr}}
+  @media(max-width:460px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px 16px;position:relative}
+  .step .s{position:absolute;top:12px;right:14px;font-size:22px;font-weight:800;color:var(--line)}
+  .step .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;font-weight:700}
+  .step .v{font-weight:800;font-size:15px;margin-bottom:5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px}
+
+  /* критерии выбора */
+  .crit{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:720px){.crit{grid-template-columns:1fr}}
+  .cr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .cr .ic{font-size:20px;margin-bottom:6px}
+  .cr h4{font-size:15px;font-weight:800;margin-bottom:5px}
+  .cr p{font-size:13.5px;color:var(--muted)}
+  .cr p b{color:var(--txt)}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  /* итог */
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 2 · углубление к 2.3–2.4 · Уровни и зоны</div>
+  <h1>Как размечать <span class="em">зоны</span></h1>
+  <p class="sub">Зона — половина сетапа (ГДЕ). Строим её не там, где цена потопталась, а там, ОТКУДА она резко ушла. Второй половиной будет свеча-триггер.<br><b>Открыл пустой график — начинай с раздела 0: алгоритм подъёма.</b></p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / бычья свеча (close &gt; open)</span>
+    <span><i class="dot d"></i> 🟣 падение / медвежья свеча (close &lt; open)</span>
+  </div>
+</header>
+
+<!-- Главный закон -->
+<section>
+  <div class="h"><div class="n">★</div><h2>Главный закон</h2></div>
+  <div class="law">
+    <div class="lbl">🔑 Держать в голове всегда</div>
+    <div class="big">Зону строим <span style="color:var(--warn)">ОТ ИМПУЛЬСА</span> — от места, откуда цена резко ушла. «Толкучка», где цена долго стояла, <span class="neq">≠</span> зона: это диапазон, а не разворот.</div>
+    <div class="fx">
+      <div class="b"><div class="k">Вопрос №1</div><b>Откуда</b> начался сильный импульс?</div>
+      <div class="b"><div class="k">Почему там</div>остались <b>неисполненные заявки</b> — цена вернётся, они сработают.</div>
+      <div class="b"><div class="k">Зона = область</div>а не линия — рынок разворачивается <b>от диапазона</b>, не от одной цены.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Алгоритм подъёма -->
+<section>
+  <div class="h"><div class="n">0</div><h2>Алгоритм подъёма — от пустого графика</h2></div>
+  <div class="card">
+    <p>Порядок <b>жёсткий</b>. Смысл порядка: сетку и границы наносим <b class="accent">до того, как начал думать про сделку</b> — иначе подгонишь линии под желаемое направление. Весь проход — 5–7 минут.</p>
+    <p class="muted" style="margin-top:10px">На этом этапе <b>не ищем сетапы, не открываем H1, не считаем R:R и не заряжаем ветки.</b> Разметка — отдельная работа. Закончил её — только тогда переходишь к плану.</p>
+  </div>
+
+  <div class="steps" style="margin-top:16px">
+    <div class="step">
+      <span class="s">0</span>
+      <div class="k">Чистый экран</div>
+      <div class="v">D1, без индикаторов</div>
+      <small>Старые объекты удалить. Видно 60–120 дневных свечей. Правый край на дату — вправо не тащим. Записать текущую цену.</small>
+    </div>
+    <div class="step">
+      <span class="s">1</span>
+      <div class="k">Дневной ход</div>
+      <div class="v">Средний High–Low</div>
+      <small>По 10–14 свечам. Для проверки конкретного импульса — по периоду <b>ДО</b> него, сами импульсные свечи не включать.</small>
+    </div>
+    <div class="step">
+      <span class="s">2</span>
+      <div class="k">Сетка круглых</div>
+      <div class="v">Первое на графике</div>
+      <small>Шаг 3–6% от цены (калькулятор). Чертим 🔥 и ◆ + ▪ у цены. Тонкий пунктир. До анализа — чтобы не подгонять.</small>
+    </div>
+    <div class="step">
+      <span class="s">3</span>
+      <div class="k">Рабочий экран</div>
+      <div class="v">Три шага вниз и вверх</div>
+      <small>Отсчитал три пунктирные линии в каждую сторону. Внутри — на график, дальше — в память.</small>
+    </div>
+    <div class="step">
+      <span class="s">4</span>
+      <div class="k">Границы диапазона</div>
+      <div class="v">Потолок и пол</div>
+      <small>2+ касания с реакцией, линия <b>по ТЕЛАМ</b>. Ширина в норме 5–15% от цены. Совпало с круглым — двойная гиря, не дубль.</small>
+    </div>
+    <div class="step">
+      <span class="s">5</span>
+      <div class="k">Зоны от импульсов</div>
+      <div class="v">У каждой якорь</div>
+      <small>Импульс = 2–3 дневных хода (по фитилям) + тела ≥60% + откат &lt;⅓. Граница — по телам. Держать 3–4 зоны у цены.</small>
+    </div>
+    <div class="step">
+      <span class="s">6</span>
+      <div class="k">Полярность</div>
+      <div class="v">Прогнать главные</div>
+      <small>Пробили и потом отбивались с другой стороны — подписать. «Полярности нет» — только когда проверил обе стороны каждого крупного уровня.</small>
+    </div>
+    <div class="step">
+      <span class="s">7</span>
+      <div class="k">Чистка</div>
+      <div class="v">Одно слово про каждую</div>
+      <small>«Импульс» / «реакции» / «круглое». Не можешь — стирай. На экране 3–6 линий у цены.</small>
+    </div>
+  </div>
+
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">🧭 Почему именно этот порядок</div>
+    <div class="big">Сначала то, что <span style="color:var(--warn)">не зависит от твоего мнения</span> о рынке, — потом то, что зависит.</div>
+    <div class="fx">
+      <div class="b"><div class="k">Круглые — первыми</div>Они существуют <b>независимо от гипотезы</b>: 100 000 у BTC круглое и в лонге, и в шорте. Нанёс после анализа — подогнал под желаемое.</div>
+      <div class="b"><div class="k">Ход — раньше сетки</div>Шаг сетки = <b>1–2 дневных хода</b>. Без числа берёшь готовое («BTC по 10k») или на глаз. Одно измерение работает потом четырежды.</div>
+      <div class="b"><div class="k">Рамка — до поиска</div>Рабочий экран отсекает историю, которую всё равно сотрёшь. Экстремум в девяти дневных ходах не участвует ни в одном решении.</div>
+      <div class="b"><div class="k">Границы — раньше зон</div>Они задают <b>контекст</b> (внутри чего живут зоны) и дешевле в поиске: 2 реакции видно глазами, зона требует проверки по трём условиям.</div>
+      <div class="b"><div class="k">Полярность — после</div>Это не объект, а <b>свойство</b> уже нанесённых уровней. Проверить нечего, пока уровни не стоят. Отдельным шагом — потому что иначе растворяется и теряется.</div>
+      <div class="b"><div class="k">Чистка — последней</div>В процессе рисуешь больше, чем нужно, — это норма. «Одно слово про линию» работает только когда видна вся картина.</div>
+    </div>
+  </div>
+
+  <div class="mnemo">
+    <b>Одной строкой:</b> чистый D1 → дневной ход → сетка круглых → рабочий экран (3 шага) → границы по реакциям (по телам) → зоны от импульсов (у каждой якорь) → полярность → чистка до 3–6 линий.
+  </div>
+</section>
+
+<!-- Три вида уровней -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Три вида уровней — не путать</h2></div>
+  <div class="card">
+    <p>«Уровень» — это три разных объекта с разными правилами. Главная ошибка разметки: взять объект одного вида и доказывать его правилами другого.</p>
+    <div class="fx" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px">
+      <div class="b" style="flex:1 1 200px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px">
+        <div class="k" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">① Зона от импульса</div>
+        Источник — <b>откуда цена резко ушла</b>. Нужны критерии импульса выше. Рисуется <b>прямоугольником</b>.
+      </div>
+      <div class="b" style="flex:1 1 200px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px">
+        <div class="k" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">② Уровень по реакциям</div>
+        Источник — <b>хай/лоу, от которого уже разворачивались</b>. Нужны <b>2+ касания с реакцией</b>, импульс-якорь не нужен. Рисуется <b>линией по ТЕЛАМ</b> (см. ниже).
+      </div>
+      <div class="b" style="flex:1 1 200px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px">
+        <div class="k" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">③ Круглое число</div>
+        Источник — <b>никакой</b>. Наносится сеткой заранее. Ни импульса, ни касаний не требует.
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px"><b>Полярность — не четвёртый вид</b>, а состояние: уровень ① или ② после пробоя меняет знак.</p>
+    <p style="margin-top:10px"><b class="accent">Тест не создаёт зону.</b> Зона рождается там, откуда цена <b>ушла</b>, а не там, куда пришла. Пара касаний доказывает уровень вида ②, но не превращает его в зону вида ①.</p>
+  </div>
+
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">✏️ По телам или по фитилям — вопрос, на котором чаще всего плывёт разметка</div>
+    <div class="big">Линию уровня ② ведём по <span style="color:var(--warn)">ТЕЛАМ</span> (скоплению закрытий), а <b>фитили задают запас для стопа</b>, не саму линию.</div>
+    <div class="fx">
+      <div class="b"><div class="k">Тела = уровень</div>Там, где рынок <b>согласился</b> остановиться и развернуться. По ним считаем вход и цель.</div>
+      <div class="b"><div class="k">Фитили = бахрома</div>Там, где <b>снимали ликвидность</b>. За крайний фитиль прячем стоп — уровнем он не является.</div>
+      <div class="b"><div class="k">Разброс тел велик?</div>Если закрытия разошлись больше чем на <b>~0.5–1%</b> — это уже <b>узкая зона</b>, а не линия. Рисуй прямоугольником, не насилуй разброс в нитку.</div>
+    </div>
+    <div class="mnemo" style="margin-top:14px">Тот же принцип, что во всём методе: <b>идея живёт и умирает по ЗАКРЫТИЮ</b>, прокол фитилём — рутина. Поэтому линия — по закрытиям, защита — за фитилём.</div>
+  </div>
+
+  <div class="mnemo">
+    <b>Порядок нанесения на чистый график:</b> ① сетка круглых пунктиром (до анализа, чтобы не подгонять) → ② границы рабочего диапазона по реакциям → ③ зоны от импульсов внутри → ④ отметить, что сменило полярность → ⑤ стереть всё, под чем нет основания.<br>
+    <b>Тест на правильность:</b> про каждую линию отвечаешь одним словом — «импульс», «реакции» или «круглое». Не можешь — линию стереть. На D1-экране остаётся <b>3–6 линий</b>; больше — размечаешь шум.
+  </div>
+</section>
+
+<!-- Что считается импульсом -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Что считается импульсом</h2></div>
+  <div class="law">
+    <div class="lbl">⚠️ Количество свечей — НЕ критерий</div>
+    <div class="big">Одна свеча может быть отличным импульсом, восемь — не быть им совсем. Считают <span style="color:var(--warn)">три вещи</span>, и все три сразу.</div>
+    <div class="fx">
+      <div class="b"><div class="k">① Амплитуда</div>уход от места старта на <b>2–3 дневных хода</b> (ATR) и больше. Мерить в ATR, не в пунктах. <b class="accent">Сам ATR берём по 10–14 свечам ДО движения</b> — если считать вместе с импульсом, он раздует средний ход и обесценит критерий.</div>
+      <div class="b"><div class="k">② Тела, не фитили</div>тела <b>≥60–70%</b> свечи, фитили против хода мелкие = давила одна сторона.</div>
+      <div class="b"><div class="k">③ Без переваривания</div>откат внутри ухода <b>не больше трети</b> пройденного. Начала топтаться — импульс кончился.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <p><b>Почему «побольше свечей» — хуже, а не лучше.</b> Зона отвечает на вопрос <b>где стоял крупный</b>. Резкий уход = кто-то стоял стеной, цена отскочила и убежала. Медленный подъём на восьми вялых свечах = не стоял никто, цена просто расползлась — <b>точки, от которой рисовать, там нет</b>.</p>
+    <p class="muted">Восемь свечей вверх — это не импульс, это <b>тренд</b>. Разные вещи: тренд даёт направление (дверь ⓪), импульс даёт <b>адрес зоны</b>.</p>
+    <p class="muted"><b>Проверка:</b> не можешь ткнуть в одну конкретную свечу-старт — импульса не было, и зоны здесь нет.</p>
+  </div>
+
+  <div class="mnemo">Эталонный пример: <b>5 августа 2024, BTC</b> — ОДНА D1-свеча проколола 56k и круглое 50k до ~49k и закрылась обратно. Импульс, зона, ложный пробой — всё в одной свече. Отработала к 62k.</div>
+</section>
+
+<!-- Зачем зона, а не линия -->
+<section>
+  <div class="h"><div class="n">3</div><h2>Почему зона, а не линия</h2></div>
+  <div class="card">
+    <p>Одна цена (линия) — <b>ложная точность</b>. Цена проткнёт её фитилём на пару долларов, и ты решишь «уровень не работает» — а его просто нельзя было чертить как черту.</p>
+    <p><b>Зона (прямоугольник)</b> ловит реакцию целиком: и тех, кто заходил по фитилю, и тех, кто по закрытию свечи. Пробой фитилём внутри зоны — это <b>нормально</b>, зона на то и зона.</p>
+  </div>
+</section>
+
+<!-- Анатомия зоны: две схемы -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Где верх, где низ — анатомия зоны</h2></div>
+  <div class="diags">
+
+    <!-- Зона спроса -->
+    <div class="diag">
+      <h3><span class="badge-u">Зона спроса</span> — поддержка снизу</h3>
+      <div class="cap">Откуда цена резко ушла <b>вверх</b> 🟠. Строим по дну.</div>
+      <svg viewBox="0 0 560 250" role="img" aria-label="Схема зоны спроса: низ по кончику фитиля, верх по телам дна">
+        <!-- зона -->
+        <rect class="zone-u" x="20" y="150" width="360" height="46"/>
+        <line class="zbd-u" x1="20" y1="150" x2="380" y2="150"/>
+        <line class="zbd-u" x1="20" y1="196" x2="380" y2="196"/>
+        <!-- падающие фиолетовые свечи -->
+        <g class="dn-s dn-f">
+          <line class="wick" x1="60" y1="30" x2="60" y2="78"/><rect x="52" y="42" width="16" height="30"/>
+          <line class="wick" x1="98" y1="52" x2="98" y2="108"/><rect x="90" y="64" width="16" height="34"/>
+          <line class="wick" x1="136" y1="86" x2="136" y2="150"/><rect x="128" y="98" width="16" height="42"/>
+        </g>
+        <!-- дно: маленькие свечи с длинными нижними фитилями -->
+        <g class="dn-s dn-f">
+          <line class="wick" x1="176" y1="150" x2="176" y2="194"/><rect x="168" y="150" width="16" height="14"/>
+        </g>
+        <g class="up-s up-f">
+          <line class="wick" x1="214" y1="150" x2="214" y2="192"/><rect x="206" y="150" width="16" height="16"/>
+        </g>
+        <!-- импульс вверх -->
+        <g class="up-s up-f">
+          <line class="wick" x1="256" y1="42" x2="256" y2="166"/><rect x="248" y="54" width="16" height="98"/>
+          <line class="wick" x1="294" y1="26" x2="294" y2="60"/><rect x="286" y="34" width="16" height="24"/>
+        </g>
+        <!-- подписи -->
+        <line class="leader" x1="380" y1="150" x2="436" y2="150"/>
+        <text class="gkey" x="386" y="145">верх зоны = ТЕЛА дна</text>
+        <line class="leader" x1="380" y1="196" x2="436" y2="196"/>
+        <text class="glabel" x="386" y="209">низ зоны = кончик ФИТИЛЯ</text>
+        <text class="gimp" x="240" y="232">импульс ОТСЮДА ↑</text>
+      </svg>
+      <div class="note"><b>Низ</b> = самый низкий фитиль. <b>Верх</b> = открытия/закрытия свечей у дна (тела). Заходим на возврате в зону сверху.</div>
+    </div>
+
+    <!-- Зона предложения -->
+    <div class="diag">
+      <h3><span class="badge-d">Зона предложения</span> — сопротивление сверху</h3>
+      <div class="cap">Откуда цена резко ушла <b>вниз</b> 🟣. Строим по вершине.</div>
+      <svg viewBox="0 0 560 250" role="img" aria-label="Схема зоны предложения: верх по кончику фитиля, низ по телам вершины">
+        <!-- зона -->
+        <rect class="zone-d" x="20" y="54" width="360" height="46"/>
+        <line class="zbd-d" x1="20" y1="54" x2="380" y2="54"/>
+        <line class="zbd-d" x1="20" y1="100" x2="380" y2="100"/>
+        <!-- растущие оранжевые свечи -->
+        <g class="up-s up-f">
+          <line class="wick" x1="60" y1="172" x2="60" y2="220"/><rect x="52" y="178" width="16" height="30"/>
+          <line class="wick" x1="98" y1="142" x2="98" y2="198"/><rect x="90" y="152" width="16" height="34"/>
+          <line class="wick" x1="136" y1="100" x2="136" y2="164"/><rect x="128" y="112" width="16" height="42"/>
+        </g>
+        <!-- вершина: маленькие свечи с длинными верхними фитилями -->
+        <g class="up-s up-f">
+          <line class="wick" x1="176" y1="56" x2="176" y2="100"/><rect x="168" y="86" width="16" height="14"/>
+        </g>
+        <g class="dn-s dn-f">
+          <line class="wick" x1="214" y1="58" x2="214" y2="100"/><rect x="206" y="84" width="16" height="16"/>
+        </g>
+        <!-- импульс вниз -->
+        <g class="dn-s dn-f">
+          <line class="wick" x1="256" y1="84" x2="256" y2="208"/><rect x="248" y="98" width="16" height="98"/>
+          <line class="wick" x1="294" y1="190" x2="294" y2="224"/><rect x="286" y="192" width="16" height="24"/>
+        </g>
+        <!-- подписи -->
+        <line class="leader" x1="380" y1="54" x2="436" y2="54"/>
+        <text class="glabel" x="386" y="50">верх зоны = кончик ФИТИЛЯ</text>
+        <line class="leader" x1="380" y1="100" x2="436" y2="100"/>
+        <text class="gkey" x="386" y="113">низ зоны = ТЕЛА вершины</text>
+        <text class="gimp" x="232" y="240">импульс ОТСЮДА ↓</text>
+      </svg>
+      <div class="note"><b>Верх</b> = самый высокий фитиль. <b>Низ</b> = открытия/закрытия свечей у вершины (тела). Заходим на возврате в зону снизу.</div>
+    </div>
+
+  </div>
+  <div class="mnemo" style="margin-top:16px">Правило коротко: <b>одна граница по ЭКСТРЕМУМУ (фитиль), вторая по ТЕЛАМ.</b> Зона = «от кончика фитиля до тел». Не растягивай верх зоны спроса по верхушкам фитилей — раздуешь и потеряешь точность.</div>
+</section>
+
+<!-- Алгоритм -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Как построить одну ЗОНУ — 4 шага (это шаг 5 алгоритма подъёма)</h2></div>
+  <div class="steps">
+    <div class="step">
+      <span class="s">1</span>
+      <div class="k">Найди импульс</div>
+      <div class="v">Большое тело + быстрый ход</div>
+      <small>Пробеги D1 глазами. Мелкую пилу игнорируй — ищешь резкие уходы 🟠/🟣.</small>
+    </div>
+    <div class="step">
+      <span class="s">2</span>
+      <div class="k">Точка старта</div>
+      <div class="v">Откуда он вышел</div>
+      <small>Место, откуда импульс стартовал, — это центр будущей зоны.</small>
+    </div>
+    <div class="step">
+      <span class="s">3</span>
+      <div class="k">Растяни прямоугольник</div>
+      <div class="v">Экстремум ↔ тела</div>
+      <small>Одна граница по фитилю, вторая по телам. Не шире реальной реакции.</small>
+    </div>
+    <div class="step">
+      <span class="s">4</span>
+      <div class="k">Проверь силой</div>
+      <div class="v">Импульс? Тест? Полярность?</div>
+      <small>Хорошая зона отвечает «да» минимум на два из трёх вопросов ниже.</small>
+    </div>
+  </div>
+</section>
+
+<!-- Критерии выбора -->
+<section>
+  <div class="h"><div class="n">6</div><h2>Какие зоны рисовать (не засоряй график)</h2></div>
+  <div class="crit">
+    <div class="cr">
+      <div class="ic">🆕</div>
+      <h4>Свежесть</h4>
+      <p><b>Непротестированная зона сильнее.</b> Каждое касание «съедает» заявки. После 3–4 тестов зона слабеет и обычно пробивается.</p>
+    </div>
+    <div class="cr">
+      <div class="ic">💥</div>
+      <h4>Сила ухода</h4>
+      <p>Чем <b>резче</b> цена ушла от уровня — тем зона важнее. Вялый дрейф ≠ зона; нужен именно импульс.</p>
+    </div>
+    <div class="cr">
+      <div class="ic">🔄</div>
+      <h4>Полярность</h4>
+      <p>Бывшая <b>поддержка → сопротивление</b> (и наоборот) после пробоя. Такой уровень видит весь рынок.</p>
+    </div>
+  </div>
+  <div class="mnemo">Держи <b>не более 3–4 актуальных зон</b> вокруг текущей цены. Всё остальное — шум. Дальние исторические зоны — в голове, но не на графике.</div>
+</section>
+
+<!-- Круглые числа -->
+<section>
+  <div class="h"><div class="n">7</div><h2>Круглые числа — как наносить</h2></div>
+
+  <div class="card">
+    <p><b>Сетка круглых — наноси ЗАРАНЕЕ, тонким пунктиром, как карту ориентиров.</b> Это не сигнал и не точка входа — это «куда цену может тянуть и где стоят стопы толпы».</p>
+    <p><b class="accent">Шаг сетки считается ОТ ЦЕНЫ, а не берётся готовым числом.</b> Норма — <b>3–6% от текущей цены</b> (≈1–2 дневных хода). Готовые «BTC каждые 10k, ETH каждые 500» верны только для той цены, под которую их писали: 500 при ETH $3000 — это 17%, а при ETH $1600 — треть цены, и сетка становится бесполезной.</p>
+    <div class="mnemo" style="margin-top:12px">Проверка на глаз: если цена бежит от линии до линии дольше 2–3 дней — шаг крупный, дроби. Точный шаг под конкретную цену даёт <a class="navlink" href="calc.html#grid">калькулятор сетки</a>.</div>
+  </div>
+
+  <!-- Углубление 24.07.2026: ярусы силы + шаг под цену -->
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">⚖️ Закон силы — «чем КРУГЛЕЕ, тем СИЛЬНЕЕ»</div>
+    <div class="big">Сила круглого = сколько за ним «нулей / разрядов». <b>Аналогия — этажи здания:</b> главный круглый = лобби/парковка (толпа, давка ордеров) → крепкий уровень; половинка = промежуточная площадка; долька = ступенька, где стоят двое.</div>
+    <div class="fx">
+      <div class="b"><div class="k">🔥 Главные</div>целый крупный разряд, макс нулей: <b>100000 · 10000 · 1000 · 100 · 10 · 1.00</b>. Сильнейшие.</div>
+      <div class="b"><div class="k">Половины</div>серединка разряда: <b>50000 · 5000 · 500 · 50 · 0.50</b>. Средние.</div>
+      <div class="b"><div class="k">◦ Дольки</div>четверти / десятые: <b>25000 · 0.25 · 0.10</b>. Мягкие — не гиря.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <p><b>Какие круглые ГЛАВНЫЕ — зависит от порядка цены.</b> «Естественная единица» разряда: на дешёвом активе роль BTC-шных 10k играет мелкое число (у ADA это 0.05). <span class="muted">Это про <b>силу</b> линий, а не про шаг сетки — шаг остаётся 3–6% от цены.</span></p>
+    <div class="steps" style="margin-top:14px;grid-template-columns:repeat(3,1fr)">
+      <div class="step"><span class="s">₿</span><div class="k">BTC ~$90k</div><div class="v">🔥 10k · ультра 50k/100k</div><small>◦ мягкие — 1k</small></div>
+      <div class="step"><span class="s">Ξ</span><div class="k">ETH ~$3k</div><div class="v">🔥 500 · ультра 1000</div><small>◦ мягкие — 100</small></div>
+      <div class="step"><span class="s">◎</span><div class="k">SOL ~$150</div><div class="v">🔥 50 (150·200)</div><small>◦ мягкие — 10</small></div>
+      <div class="step"><span class="s">⬡</span><div class="k">LINK ~$8.5</div><div class="v">🔥 $1 (8·9·10)</div><small>0.50 средн · ◦ 0.10</small></div>
+      <div class="step"><span class="s">₳</span><div class="k">ADA ~$0.35</div><div class="v">🔥 0.05 · ультра 0.50</div><small>◦ мягкие — 0.01</small></div>
+      <div class="step"><span class="s">✕</span><div class="k">XRP ~$2</div><div class="v">🔥 1.00 · 0.50</div><small>◦ мягкие — 0.10/0.25</small></div>
+    </div>
+  </div>
+
+  <div class="mnemo" style="margin-top:16px">🧮 Рабочий шаг под конкретную цену, линии с ярусами и дистанцию до уровня в дневных ходах считает <a class="navlink" href="calc.html#grid">калькулятор сетки</a>.</div>
+
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">✂️ Что из сетки реально ЧЕРТИМ на графике</div>
+    <div class="big">Шаг сетки считаем полностью, но на график идут <span style="color:var(--warn)">не все линии</span>: <b>🔥 главные и ◆ половины</b> в видимой области + <b>▪ и ◦ только в пределах 1–2 дневных ходов от цены</b>. Дальние рядовые — в уме, как масштабная линейка.</div>
+    <div class="fx">
+      <div class="b"><div class="k">Зачем рядовые вообще нужны</div>дают <b>масштаб</b> («до цели три шага, до стопа один» = R:R на глаз) и предупреждают о <b>промежуточных тормозах</b>: цена зависает даже на рядовом круглом.</div>
+      <div class="b"><div class="k">Почему не чертим все</div>график превращается в тетрадь в линейку, <b>сильные значения теряются</b> среди рядовых. Держим правило 3–6 линий на экране.</div>
+      <div class="b"><div class="k">Где это меняет решение</div>цель, оказавшаяся <b>сразу ЗА</b> рядовым круглым, переносится <b>ПЕРЕД</b> ним. Это единственное, ради чего рядовые и держим в голове.</div>
+    </div>
+  </div>
+
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">🎯 Три правила применения</div>
+    <div class="fx">
+      <div class="b"><div class="k">Гиря, но слабее структуры</div>Одно круглое = «может тормознуть». Круглое <b>+ price-action уровень в одной точке</b> = двойная гиря (конфлюенс).</div>
+      <div class="b"><div class="k">Чаще МАГНИТ, чем вход</div>Цена тянется его коснуть. Тейк ставь <b>чуть НЕ доходя</b> до сильного круглого (0.395 перед 0.40).</div>
+      <div class="b"><div class="k">За круглым — грэб</div>Под .00 стоят стопы → цена ныряет их собрать и возвращается. <b>Стоп — с ЗАПАСОМ за круглое</b>, не впритык.</div>
+    </div>
+  </div>
+
+  <div class="mnemo">Ошибка, которую ловим: цена «в пустоте» между зонами — а прямо под ней круглое, которое она только что тестировала. <b>«Нет зоны» ≠ «нет уровня».</b> Круглое там ЕСТЬ — отметь его, даже если сделки нет. <b>И зеркальная ошибка:</b> не назначай круглым то, что им не является. Сила зависит от порядка цены: 0.50 у XRP (~$2) — заметная половинка, а «72 000» у BTC не круглое вообще. Проверяй по ярусу силы, а не по ощущению.</div>
+</section>
+
+<!-- Ловушки -->
+<section>
+  <div class="h"><div class="n">8</div><h2>Ловушки при разметке</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">Строить от «толкучки»</div>
+      <p>Место, где цена долго стояла, — это <b>диапазон</b>, а не зона разворота. Зона там, откуда цена <b>УШЛА</b>, а не где топталась.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Слишком широкая зона</div>
+      <p>Зона в пол-графика «на всякий случай» <b>бесполезна</b> — под неё не поставить стоп. Узко и по делу: экстремум ↔ тела.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Верх по фитилям вместо тел</div>
+      <p>Если тянуть верх зоны спроса по верхушкам фитилей — зона <b>раздувается</b> вверх и теряет точность. Верх = по телам.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Зона там, где красиво</div>
+      <p>Рисуй там, где <b>была реакция</b>, а не где ровно ложится прямоугольник. Уровень должен быть виден рынку, а не только тебе.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Зону строим ОТ импульса</b> — откуда цена резко ушла, не где потопталась.</li>
+      <li>Зона = <b>область, а не линия</b>. Прокол фитилём внутри зоны — это норма.</li>
+      <li><b>Одна граница по ЭКСТРЕМУМУ (фитиль), вторая по ТЕЛАМ.</b></li>
+      <li><span class="badge-u">Спрос</span> (поддержка): низ = нижний фитиль, верх = тела дна. Ушла вверх 🟠.</li>
+      <li><span class="badge-d">Предложение</span> (сопротивление): верх = верхний фитиль, низ = тела вершины. Ушла вниз 🟣.</li>
+      <li>Алгоритм: <b>① импульс → ② точка старта → ③ растяни → ④ проверь силой.</b></li>
+      <li><b>Импульс = 2–3 дневных хода + тела ≥60% + откат меньше трети.</b> Число свечей значения не имеет.</li>
+      <li><b>Три вида уровней:</b> зона от импульса (прямоугольник) · уровень по реакциям, 2+ касания (линия) · круглое (сетка заранее). Тест <b>не создаёт</b> зону.</li>
+      <li>Сила зоны: <b>свежесть × сила ухода × полярность.</b> Непротестированная — сильнее.</li>
+      <li><b>Шаг сетки круглых — 3–6% от цены</b>, считается под текущую цену, а не берётся готовым числом.</li>
+      <li>Не более <b>3–4 актуальных зон</b> у цены. Остальное — шум.</li>
+      <li>Зона — это ГДЕ (половина сетапа). Вход = зона <b>+ свеча-триггер</b> на ней.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · разметка зон</div>
+  Метод: чистый график → структура → <b>уровни / зоны</b> → паттерн ОТ уровня.<br>
+  Соседние шпаргалки: <a class="navlink" href="m2-chart.html">М2 · чтение графика</a> · <a class="navlink" href="patterns-cheatsheet.html">свечи-сигналы</a> · <a class="navlink" href="entry-checklist.html">чек-лист входа</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

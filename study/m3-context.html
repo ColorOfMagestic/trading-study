@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка — Модуль 3 · Контекст рынка</title>
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;
+    max-width:1080px;
+    margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px}
+  p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+  .up-t{color:var(--up);font-weight:700}
+  .down-t{color:var(--down);font-weight:700}
+
+  /* два столбца */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+
+  /* мозговой переворот / закон */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px 24px 20px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:14px;position:relative}
+  .law p{position:relative}
+
+  /* роли */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:680px){.roles{grid-template-columns:1fr}}
+  .role{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .role .rt{font-weight:800;font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .role.win{border-color:var(--up-bd)} .role.win .rt{color:var(--up)}
+  .role.veto{border-color:var(--down-bd)} .role.veto .rt{color:var(--down)}
+  .role.neu .rt{color:var(--muted)}
+  .role p{font-size:14px;color:var(--muted)}
+  .role p b{color:var(--txt)}
+
+  /* 4 комбо доминации */
+  .combos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.combos{grid-template-columns:1fr}}
+  .combo{border-radius:14px;padding:18px;border:1px solid var(--line);background:var(--card)}
+  .combo.good{border-color:var(--up-bd);background:var(--up-dim)}
+  .combo.bad{border-color:var(--down-bd);background:var(--down-dim)}
+  .combo .ct{font-weight:800;font-size:15px;margin-bottom:6px}
+  .combo.good .ct{color:var(--up)} .combo.bad .ct{color:var(--down)}
+  .combo p{font-size:13.5px;color:var(--muted)}
+  .combo p b{color:var(--txt)}
+
+  /* формула */
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 140px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s0{color:var(--warn)} .step .s{color:var(--accent);font-weight:800}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+  .step small a{color:var(--accent);text-decoration:none}
+  .step.ctx{border-color:var(--warn)}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  /* итог */
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+  .mnemo a{color:var(--accent);text-decoration:none}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--line)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 3 · Контекст рынка</div>
+  <h1>Контекст рынка — <span class="em">фильтр перед входом</span></h1>
+  <p class="sub">Прежде чем искать сделку — оцени фон. Мультитаймфрейм задаёт направление, BTC и доминация решают, попутный ветер или встречный.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / движение вверх</span>
+    <span><i class="dot d"></i> 🟣 падение / движение вниз</span>
+  </div>
+</header>
+
+<!-- 1. Мультитаймфрейм -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Мультитаймфрейм (3.1)</h2></div>
+  <div class="card">
+    <p>Один рынок под разным «зумом», <b>не четыре разных рынка</b>. Старший ТФ и младший ТФ смотрят на одно и то же движение с разной дистанции.</p>
+    <div class="grid2" style="margin-top:12px">
+      <div class="card" style="background:var(--card2)">
+        <p><b class="accent">Старший ТФ — у нас D1 = КУДА и ГДЕ</b></p>
+        <p class="muted">Направление и локация. Это <b>компас</b> — задаёт сторону и уровень, от которого работаем.</p>
+      </div>
+      <div class="card" style="background:var(--card2)">
+        <p><b class="accent">Младший ТФ — у нас H1 = КОГДА</b></p>
+        <p class="muted">Только момент входа. Это <b>прицел</b> — триггер-свеча на уровне.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">Пары ТФ — соседние, старший ×4–6 младшего. <b>Наш рабочий комплект — D1 → H1</b> (×24): H4 сознательно перепрыгиваем, чтобы держать ровно два ТФ. Двух достаточно; <b>5 ТФ = паралич анализа</b> (противоречат друг другу).</p>
+  </div>
+
+  <div class="law" style="margin-top:14px">
+    <div class="lbl">🧠 Ключевой переворот мозга</div>
+    <div class="big">Откат на старшем ТФ выглядит как полноценный «тренд» на младшем.</div>
+    <p class="muted">Аптренд D1 + коррекция вниз → на H1 эта коррекция рисует <span class="down-t">LH / LL — «даунтренд»</span>. Новичок шортит шум младшего ТФ <b>против</b> старшего и попадает под возобновление тренда. Смотри на старший ТФ ПЕРВЫМ.</p>
+  </div>
+</section>
+
+<!-- 2. Top-down -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Метод «сверху вниз» (top-down)</h2></div>
+  <div class="formula">
+    <div class="step">
+      <div class="k"><span class="s">①</span> Направление</div>
+      <div class="v">тренд D1</div>
+      <small>аптренд → только лонг · даунтренд → только шорт</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">②</span> Локация</div>
+      <div class="v">уровни / зоны D1</div>
+      <small>откуда имею право входить по тренду</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">③</span> Триггер</div>
+      <div class="v">свеча / CHoCH H1</div>
+      <small>жду цену в зоне старшего ТФ + сигнал в сторону тренда</small>
+    </div>
+  </div>
+  <div class="mnemo">Формула входа = <b>направление (D1) + локация (D1) + триггер (H1)</b>. Младший ТФ никогда не спорит со старшим — он лишь уточняет момент.</div>
+</section>
+
+<!-- 3. BTC как главный -->
+<section>
+  <div class="h"><div class="n">3</div><h2>BTC как «главный» (3.2)</h2></div>
+  <div class="card">
+    <p>У альта <b>ТРИ начальника</b>: <b class="accent">BTC → старший ТФ (D1) → младший ТФ (H1)</b>. BTC стоит выше всех твоих таймфреймов.</p>
+    <p><b>BTC = рубильник рынка:</b> крупнейшая ликвидность, «резервная валюта» крипты (фонды заходят через BTC, выходят — распродавая альты), общий страх/жадность. Тонкая ликвидность альтов → ETH летит резче BTC.</p>
+    <p class="down-t">Практика: смотреть BTC ПЕРЕД любой сделкой по ETH — это первая галочка «Контекст». Бычий сетап на ETH при падающем BTC = ловушка.</p>
+  </div>
+
+  <div class="roles" style="margin-top:14px">
+    <div class="role win">
+      <div class="rt">↔ Идут вместе</div>
+      <p><b>Норма.</b> BTC и альты в одну сторону — торгуй в сторону BTC.</p>
+    </div>
+    <div class="role neu">
+      <div class="rt">⏸ BTC флэт</div>
+      <p><b>Альты бегут сами.</b> BTC стоит — у альтов окно на своё движение.</p>
+    </div>
+    <div class="role veto">
+      <div class="rt">⚡ Дивергенция</div>
+      <p><b>ETH↑ BTC↓ = красный флаг.</b> BTC обычно перетягивает альт к себе.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Доминация -->
+<section>
+  <div class="h"><div class="n">4</div><h2>BTC-доминация</h2></div>
+  <div class="card">
+    <p><b>BTC.D</b> (<span class="accent">CRYPTOCAP:BTC.D</span>) = доля BTC в общей капитализации рынка, %. Читается как обычный график.</p>
+    <p><span class="up-t">Растёт</span> → деньги текут в BTC, <b>альты слабеют</b> — встречный ветер лонгу ETH. <span class="down-t">Падает</span> → деньги в альты, <b>«альтсезон»</b> — попутный ветер лонгу ETH.</p>
+  </div>
+
+  <div class="law" style="margin-top:14px">
+    <div class="lbl">⚠ Главная ловушка</div>
+    <div class="big">Доминация ≠ направление рынка.</div>
+    <p class="muted">Дом = «<b>кто сильнее — BTC или альты</b>», а НЕ «рынок вверх или вниз». Читать всегда <b>ВМЕСТЕ с ценой BTC</b> — отсюда 4 комбо ниже.</p>
+  </div>
+
+  <div class="combos" style="margin-top:14px">
+    <div class="combo good">
+      <div class="ct">BTC ↑ · Дом ↓</div>
+      <p><b>Альтсезон.</b> Деньги перетекают в альты, эфир сильнее BTC → <b>лонг ETH идеален.</b></p>
+    </div>
+    <div class="combo">
+      <div class="ct">BTC ↑ · Дом ↑</div>
+      <p>Растёт сам BTC, альты отстают → <b>лонгуй BTC</b>, не ETH (эфир будет тормозить).</p>
+    </div>
+    <div class="combo bad">
+      <div class="ct">BTC ↓ · Дом ↑</div>
+      <p>Деньги бегут в BTC как в «тихую гавань» → <b>альты сливают сильнее всего.</b> Лонг ETH — под нож.</p>
+    </div>
+    <div class="combo bad">
+      <div class="ct">BTC ↓ · Дом ↓</div>
+      <p><b>Risk-off.</b> Уходят и из BTC, и из альтов → в стейблы. Всё вниз, сделок нет.</p>
+    </div>
+  </div>
+
+  <div class="mnemo">Третье состояние — <b>ФЛЭТ доминации</b>: BTC ↔ ETH идут в ногу, деньги не перетекают. Самый спокойный контекст — возврат к простой логике «смотри направление BTC». Флэт размечается <b>EQH/EQL</b> (равные верхи/низы = ликвидность), а не буквами HH/HL — язык тренда тут не работает.</div>
+</section>
+
+<!-- 5. Такт 0 -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Такт ⓪ Контекст — фильтр-вето</h2></div>
+  <div class="card">
+    <p>Весь Модуль 3 добавляет <b>новый шаг ПЕРЕД</b> top-down: <span class="s0" style="color:var(--warn);font-weight:800">⓪ Контекст</span> = фильтр. Он <b>не даёт вход</b>, а <b>запрещает</b> его при встречном фоне (как красный свет: не везёт тебя, но держит на месте).</p>
+  </div>
+  <div class="formula" style="margin-top:14px">
+    <div class="step ctx">
+      <div class="k"><span class="s0">⓪</span> Контекст</div>
+      <div class="v">BTC → доминация → funding → OI/ликв</div>
+      <small>фильтр-вето · <a href="funding-cheatsheet.html">funding</a> · <a href="derivatives-cheatsheet.html">OI/ликв</a></small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">①</span> Направление</div>
+      <div class="v">тренд D1</div>
+      <small>лонг / шорт</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">②</span> Локация</div>
+      <div class="v">зона / уровень D1</div>
+      <small>где имею право входить</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">③</span> Триггер</div>
+      <div class="v">свеча / CHoCH H1</div>
+      <small>когда жму на курок</small>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Три роли -->
+<section>
+  <div class="h"><div class="n">6</div><h2>Три роли контекста</h2></div>
+  <div class="roles">
+    <div class="role win">
+      <div class="rt">✓ Усиление</div>
+      <p>Фон в сторону сделки. Лонг ETH <b>+ BTC растёт + доминация падает</b> (альтсезон). Контекст ЗА — вес сетапа выше.</p>
+    </div>
+    <div class="role veto">
+      <div class="rt">✕ Вето</div>
+      <p>Фон против входа. Хочешь лонг ETH, но <b>BTC валится / доминация растёт</b> → сделки нет, даже с чистым сигналом.</p>
+    </div>
+    <div class="role neu">
+      <div class="rt">○ Нейтрально</div>
+      <p>Фон молчит (BTC флэт, доминация в боковике, funding у нормы) → смотрим на остальные фильтры и сам сетап.</p>
+    </div>
+  </div>
+  <div class="mnemo">Контекст — это <b>вес, а не голосование «3 против 2»</b>. Одно жёсткое вето (BTC валится) перевешивает несколько мелких плюсов. <b>Вход всегда даёт свеча на уровне</b>, контекст лишь разрешает / запрещает / усиливает.</div>
+</section>
+
+<!-- 7. Ловушки -->
+<section>
+  <div class="h"><div class="n">7</div><h2>Ловушки терминов</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">Разные измерения</div>
+      <p><b>«BTC растёт» <span class="neq">≠</span> «доминация растёт».</b> Цена — это цена; доминация — доля BTC в рынке. Можно расти по цене и падать по доле одновременно.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Доминация ≠ направление</div>
+      <p>Доминация <span class="neq">≠</span> «рынок вверх/вниз». Она про <b>перетекание денег BTC↔альты</b>. Читать только в паре с ценой BTC.</p>
+    </div>
+    <div class="trap">
+      <div class="no">BTC↑Дом↑ → лонгуй BTC</div>
+      <p>При растущей доминации альт <b>отстаёт</b>. Хочешь заработать на росте — бери <b>сам BTC</b>, а не ETH. Лонг ETH здесь — встречный ветер.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Откат ≠ разворот</div>
+      <p>Нисходящая лесенка на H1 внутри аптренда D1 (пока HL цел) — это <b>откат</b>, а не даунтренд. Не шорти против старшего ТФ.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Старший ТФ = КУДА</b> (направление, компас), <b>младший ТФ = ГДЕ/КОГДА</b> (вход, прицел). D1 → H1.</li>
+      <li><b>Откат старшего ТФ = «тренд» младшего.</b> Не шорти шум H1 против аптренда D1.</li>
+      <li>Top-down: <b>① направление D1 → ② локация D1 → ③ триггер H1.</b> 2 ТФ достаточно, 5 = паралич.</li>
+      <li><b>BTC = рубильник.</b> У альта три начальника: BTC → D1 → H1. Смотри BTC ПЕРЕД сделкой по ETH.</li>
+      <li><b>Доминация↑</b> → деньги в BTC, альты слабеют. <b>Доминация↓</b> → альтсезон, эфир сильнее.</li>
+      <li><b>4 комбо:</b> BTC↑Дом↓ = лонг ETH · BTC↑Дом↑ = лонг BTC · BTC↓Дом↑ = альты льют сильнее всего · BTC↓Дом↓ = risk-off.</li>
+      <li><b>«BTC растёт» ≠ «доминация растёт»</b> · доминация ≠ направление рынка.</li>
+      <li>Такт <b>⓪ Контекст</b> (BTC → доминация → <a class="navlink" href="funding-cheatsheet.html">funding</a> → <a class="navlink" href="derivatives-cheatsheet.html">OI/ликв</a>) = фильтр-вето ПЕРЕД ①②③.</li>
+      <li>Контекст = <b>вес, не голосование</b>. Вход даёт свеча на уровне.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Модуль 3</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Соседние шпаргалки: <a class="navlink" href="index.html">все шпаргалки</a> · <a class="navlink" href="funding-cheatsheet.html">funding</a> · <a class="navlink" href="derivatives-cheatsheet.html">OI/ликвидации</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

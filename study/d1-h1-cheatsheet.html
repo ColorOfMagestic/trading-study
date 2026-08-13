@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Когда спускаться на H1 — Price Action</title>
+<style>
+  :root{
+    --up:#ff8c1a; --up-dim:#ff8c1a22; --up-bd:#ff8c1a55;
+    --down:#a855f7; --down-dim:#a855f722; --down-bd:#a855f755;
+    --bg:#0d1017; --card:#161b26; --card2:#1d2432; --line:#2a3242;
+    --txt:#e7ecf5; --muted:#93a0b5; --accent:#4fd1c5; --warn:#ffd23f;
+    --go:#3ddc84; --go-dim:#3ddc8418; --go-bd:#3ddc8455;
+    --no:#ff5470; --no-dim:#ff547018; --no-bd:#ff547055;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:32px 18px 60px;max-width:820px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  header{text-align:center;margin-bottom:26px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:28px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:14.5px;max-width:600px;margin:0 auto}
+
+  .block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:16px}
+  .block > .bh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .block .bn{flex:0 0 30px;height:30px;border-radius:8px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .block .bt{font-weight:800;font-size:17px}
+  .block p{font-size:14.5px;margin-top:6px}
+  .block p b{color:#fff}
+
+  /* таблица разделения труда */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+  @media(max-width:560px){.split{grid-template-columns:1fr}}
+  .tf{border-radius:12px;padding:15px 16px;border:1px solid}
+  .tf.d1{background:var(--up-dim);border-color:var(--up-bd)}
+  .tf.h1{background:#4fd1c514;border-color:#4fd1c544}
+  .tf .name{font-weight:900;font-size:17px;display:flex;align-items:center;gap:8px}
+  .tf.d1 .name{color:var(--up)} .tf.h1 .name{color:var(--accent)}
+  .tf .role{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 0 10px}
+  .tf ul{list-style:none;font-size:14px}
+  .tf li{padding:4px 0 4px 20px;position:relative;line-height:1.4}
+  .tf li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:7px;border-radius:50%}
+  .tf.d1 li::before{background:var(--up)} .tf.h1 li::before{background:var(--accent)}
+  .tf li b{color:#fff}
+
+  /* таблица 5 элементов */
+  .fivewrap{overflow-x:auto;margin-top:4px}
+  table.five{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+  table.five th{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  table.five td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+  table.five tr:last-child td{border-bottom:0}
+  table.five .el{font-weight:800;color:#fff;white-space:nowrap}
+  table.five .el small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+  table.five .tfd{font-weight:900;white-space:nowrap}
+  table.five .tfd.d1{color:var(--up)} table.five .tfd.h1{color:var(--accent)}
+  table.five .tfd small{display:block;font-weight:600;color:var(--muted);font-size:11.5px;font-style:italic}
+  table.five .why{color:var(--txt)} table.five .why b{color:#fff}
+
+  /* три замка */
+  .lock{display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--line)}
+  .lock + .lock{margin-top:8px}
+  .lock .k{flex:0 0 34px;height:34px;border-radius:9px;background:#0d1017;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .lock .lt{font-size:14.5px;line-height:1.45}
+  .lock .lt b{color:#fff;font-weight:800}
+  .lock .lt small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .arrow-down{text-align:center;color:var(--accent);font-size:22px;margin:10px 0 2px;font-weight:900}
+
+  /* развилка решения */
+  .fork{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  @media(max-width:560px){.fork{grid-template-columns:1fr}}
+  .path{border-radius:12px;padding:16px;border:2px solid;text-align:center}
+  .path.no{background:var(--no-dim);border-color:var(--no-bd)}
+  .path.go{background:var(--go-dim);border-color:var(--go-bd)}
+  .path .cond{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .path .big{font-size:17px;font-weight:900}
+  .path.no .big{color:var(--no)} .path.go .big{color:var(--go)}
+  .path .sm{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+  .analogy{background:var(--card2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;margin-top:12px;font-size:14.5px}
+  .analogy b{color:var(--accent)}
+
+  /* SVG-схема D1 vs H1 */
+  .scheme{background:#0d1017;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:4px}
+  .scheme svg{display:block;width:100%;height:auto}
+  .leg{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .leg span{display:inline-flex;align-items:center;gap:6px}
+  .leg i{width:20px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
+  .leg .box{width:14px;height:11px;border-radius:3px;border:1px solid}
+
+  /* карточки H1-уровней: подарок vs ухаб */
+  .lv{border-radius:12px;padding:15px 16px;border:1px solid}
+  .lv.good{background:var(--go-dim);border-color:var(--go-bd)}
+  .lv.bump{background:#ffd23f14;border-color:#ffd23f55}
+  .lv .name{font-weight:900;font-size:16px}
+  .lv.good .name{color:var(--go)} .lv.bump .name{color:var(--warn)}
+  .lv .role{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:5px 0 9px}
+  .lv p{font-size:13.8px;margin-top:0}
+
+  .note{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:13.8px;color:var(--muted)}
+  .note b{color:var(--warn)}
+  .note.red{border-color:var(--no-bd)} .note.red b{color:var(--no)}
+
+  ol.rhythm{list-style:none;counter-reset:r}
+  ol.rhythm li{counter-increment:r;position:relative;padding:8px 0 8px 40px;font-size:14.5px;border-top:1px solid var(--line)}
+  ol.rhythm li:first-child{border-top:0}
+  ol.rhythm li::before{content:counter(r);position:absolute;left:0;top:8px;width:26px;height:26px;border-radius:7px;background:var(--card2);border:1px solid var(--line);color:var(--accent);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  ol.rhythm li b{color:#fff}
+
+  .xlinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .xlk{font-size:13px;font-weight:700;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--txt)}
+  .xlk:hover{border-color:var(--accent);color:var(--accent)}
+
+  footer{text-align:center;margin-top:30px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Мультитаймфрейм · D1 → H1</div>
+  <h1>Когда спускаться на <span class="em">H1</span></h1>
+  <p class="sub">Одно правило, чтобы больше не путаться. H1 — не второй экран, за которым сидишь. Это лупа, которую достаёшь на 10 минут, когда D1 подвёл цену к уровню.</p>
+</header>
+
+<!-- Разделение труда -->
+<div class="block">
+  <div class="bh"><div class="bn">≡</div><div class="bt">У двух ТФ — разные работы</div></div>
+  <p>Они не конкурируют. D1 отвечает <b>ГДЕ и КУДА</b>. H1 отвечает <b>КОГДА именно</b>. Не путай их местами.</p>
+  <div class="split">
+    <div class="tf d1">
+      <div class="name">🟠 D1 — твой дом</div>
+      <div class="role">база · живёшь тут</div>
+      <ul>
+        <li><b>Куда</b> — направление тренда (HH·HL / LH·LL)</li>
+        <li><b>Где</b> — размечаю уровни и зоны</li>
+        <li><b>Есть ли сетап</b> — 1 пин / 2 поглощение / 3 BOS+ретест / 4 ложный пробой</li>
+        <li>Проверяю <b>1–2 раза в день</b></li>
+      </ul>
+    </div>
+    <div class="tf h1">
+      <div class="name">🔎 H1 — лупа</div>
+      <div class="role">визит на минуту</div>
+      <ul>
+        <li><b>Когда</b> — ловлю триггер-свечу у уровня</li>
+        <li><b>Точный стоп</b> — за фитиль / край паттерна</li>
+        <li>Открываю <b>только в один момент</b></li>
+        <li>Вдали от уровня = <b>шум</b>, не сигнал</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Пять элементов сделки -->
+<div class="block">
+  <div class="bh"><div class="bn">⑤</div><div class="bt">Пять элементов сделки — кто на каком ТФ живёт</div></div>
+  <p><b>D1 решает ЧТО, ГДЕ и ДОКУДА. H1 решает только КОГДА.</b> Четыре элемента из пяти живут на дневке — поэтому ты не приклеен к экрану: план строится один раз, H1 проверяется пару раз в день.</p>
+  <div class="fivewrap">
+  <table class="five">
+    <tr><th>Элемент</th><th>Таймфрейм</th><th>Почему</th></tr>
+    <tr>
+      <td class="el">Идея<small>сетап, направление</small></td>
+      <td class="tfd d1">D1</td>
+      <td class="why">структура, зоны, ложный пробой — всё это события D1</td>
+    </tr>
+    <tr>
+      <td class="el">Локация<small>зона входа</small></td>
+      <td class="tfd d1">D1</td>
+      <td class="why">уровень рисуется на старшем ТФ, H1 — только лупа</td>
+    </tr>
+    <tr>
+      <td class="el">Стоп</td>
+      <td class="tfd d1">D1<small>по умолчанию</small></td>
+      <td class="why">за структурой, <b>где идея умирает</b> (за фитиль ложного пробоя + круглое, с запасом)</td>
+    </tr>
+    <tr>
+      <td class="el"></td>
+      <td class="tfd h1"><i>H1</i><small>законная опция</small></td>
+      <td class="why">за триггер-свечой — тесней, R:R жирнее. <b>Плата: вылет по стопу при живой идее.</b> Называется вслух ДО входа, молча брать нельзя</td>
+    </tr>
+    <tr>
+      <td class="el">Цель</td>
+      <td class="tfd d1">D1</td>
+      <td class="why">ближайшее <b>препятствие, о которое цена реально спотыкалась</b> (зона / противоположный край). Слабое промежуточное, сквозь которое импульс проходил насквозь, — повод подтянуть стоп, <b>не</b> повод резать цель</td>
+    </tr>
+    <tr>
+      <td class="el">Вход</td>
+      <td class="tfd h1">H1</td>
+      <td class="why">единственное, что даёт H1: триггер + точная цена + тайминг</td>
+    </tr>
+  </table>
+  </div>
+  <div class="note"><b>Живой пример (реп №10, LINK, дек 2024):</b> Сетап 4 лонг, вход 23. Версия А — стоп 21.6 за H1-триггером, R:R 1:4; версия Б — стоп 19.6 за D1-фитилём, R:R 1:1.76 (не прошла фильтр 1:2). Реальность: 27 дек фитиль вынес 21.6 <b>при живой идее</b> (закрытие 21.558 — выше опоры 21.115) — плата версии А случилась буквально. Идея умерла только 29 дек закрытием 20.9 → профи вышел бы руками −0.62R, не дожидаясь стопа −1R.</div>
+</div>
+
+<!-- Полный алгоритм 7 шагов -->
+<div class="block">
+  <div class="bh"><div class="bn">🧭</div><div class="bt">Полный алгоритм — от плана до входа</div></div>
+  <p>Семь шагов. Первые три — <b style="color:var(--up)">на D1</b> (пишешь план), дальше — <b style="color:var(--accent)">на H1</b> (исполняешь). Ты <b>не угадываешь будущее</b> — заранее решаешь, что <b>сделаешь</b>, когда придёт факт.</p>
+  <ol class="rhythm" style="margin-top:12px">
+    <li><b style="color:var(--up)">D1 · ПЛАН.</b> Размечаю: тренд/структура → уровни и зоны → сетка круглых. Уровни — всегда первым шагом.</li>
+    <li><b style="color:var(--up)">D1 · ПЛАН.</b> Заряжаю <b>гипотезу — ОБЕ ветки</b> по формуле «ЕСЛИ [цена в зону] + [триггер] → ТО [сторона · вход · стоп · цель · R:R]». Пишу <b>заранее и спокойно</b>, пока цена далеко.<br><small style="color:var(--muted)">⚠️ Ветки заряжаются <b style="color:#fff">только на достижимый уровень</b> — в пределах ~1 дневного хода. Это <b style="color:#fff">две реакции на ОДИН уровень</b> (отбой / пробой), а не четыре ветки на все зоны сразу. Уровень дальше 2 ходов = воздух, там план без цифр: «жду подхода к краю». Дистанцию считает <a href="calc.html#dist">калькулятор</a>.</small></li>
+    <li><b style="color:var(--up)">D1 · ЖДУ.</b> Проверяю 1–2 раза в день один вопрос: цена подошла к зоне? Нет → руки прочь, живу дальше.</li>
+    <li><b style="color:var(--accent)">ПЕРЕХОД.</b> Цена в зоне + все <b>3 замка</b> защёлкнуты (см. ниже) → достаю <b>H1</b>.</li>
+    <li><b style="color:var(--accent)">H1 · ИСПОЛНЕНИЕ.</b> Жду <b>сетап (№1–4)</b>, подтверждённый триггер-свечой. Нет сетапа → нет входа, отменяю.</li>
+    <li><b style="color:var(--accent)">H1 · РИСК-ГЕЙТ.</b> Стоп за структуру · R:R ≥ 1:2 · риск ≤ 0.5% · стоп и тейк <b>ордерами</b>. Один «нет» = входа нет.</li>
+    <li><b style="color:var(--go)">ВХОД.</b> Только теперь — по закрытию триггер-свечи.</li>
+  </ol>
+
+  <p style="margin-top:16px"><b>Шаг 5 крупным планом — что такое «сетап»:</b> пин и поглощение — это <b>форма свечи</b> (триггер). Ложный пробой и слом структуры — это <b>сами сетапы</b>. На H1 ищешь <b>сетап</b>, а свеча его <b>подтверждает</b> — не путай одно с другим.</p>
+  <div style="margin-top:10px">
+    <div class="lock"><div class="k" style="color:var(--down);font-weight:800">1</div><div class="lt"><b>Сетап 1 — отбой от зоны</b><small>триггер: пин-бар</small></div></div>
+    <div class="lock"><div class="k" style="color:var(--down);font-weight:800">2</div><div class="lt"><b>Сетап 2 — отбой от зоны</b><small>триггер: поглощение</small></div></div>
+    <div class="lock"><div class="k" style="color:var(--down);font-weight:800">3</div><div class="lt"><b>Сетап 3 — BOS + ретест</b><small>слом структуры → возврат к уровню (полярность) → триггер</small></div></div>
+    <div class="lock"><div class="k" style="color:var(--down);font-weight:800">4</div><div class="lt"><b>Сетап 4 — ложный пробой</b><small>вынос за уровень → закрытие обратно внутрь → триггер</small></div></div>
+  </div>
+  <p style="margin-top:12px;font-size:13.8px;color:var(--muted)"><b style="color:#fff">Номер сетапа диктует локация, а не будущая свеча.</b> У верха флэта заранее известны кандидаты: вынос+возврат = №4 (главный, верх = магнит ликвидности), чистый отбой = №1/2. Оба — одна сторона. Номер = <b style="color:#fff">адрес стопа</b> (№4 → за фитиль прокола; №1/2 → за зону).</p>
+
+  <div class="note"><b>План ≠ предсказание.</b> Ты не пишешь «цена развернётся тут». Ты пишешь «ЕСЛИ факт X случится → ТО я сделаю Y». Всё равно ждёшь <b>факт</b> (закрытие триггера) — план лишь готовит спокойную реакцию на него. Нет факта → нет входа, какой бы красивой ни была гипотеза.</div>
+</div>
+
+<!-- Три замка -->
+<div class="block">
+  <div class="bh"><div class="bn">🔒</div><div class="bt">Правило: 3 замка</div></div>
+  <p>Спуститься на H1 <b>разрешено только</b>, когда на D1 защёлкнулись все три:</p>
+  <div style="margin-top:12px">
+    <div class="lock"><div class="k">⓪</div><div class="lt"><b>Направление определено</b><small>знаю, куда смотрю — лонг / шорт / руки прочь</small></div></div>
+    <div class="lock"><div class="k">①</div><div class="lt"><b>Уровень / зона размечены на D1</b><small>первым делом, всегда — уровни есть на любом графике</small></div></div>
+    <div class="lock"><div class="k">②</div><div class="lt"><b>Цена ПРИШЛА в зону и ЗАМЕДЛИЛАСЬ</b><small>есть закрытия внутри зоны — не в пустоте между зонами</small></div></div>
+  </div>
+  <div class="arrow-down">↓</div>
+  <p style="text-align:center"><b>Только теперь открываю H1</b> — ловить триггер и ставить стоп.</p>
+
+  <div class="note red"><b>Замок ② — не «дошла», а «задержалась».</b> Цена <b>прошила зону насквозь</b> за одну D1-свечу и закрылась за ней — это <b>пробой, а не тест</b>: триггеру не в чем родиться, на H1 спускаться незачем. Тест — это когда цена в зону <b>пришла и там осталась</b> (закрытия внутри). Разница решает, будет вход вообще или нет.</div>
+
+  <div class="note"><b>И смотреть на H1 только свечи У ЛИНИИ</b> — 2–5 штук в зоне, а не сканировать весь график. Иначе найдёшь «паттерн в пустоте»: свеча с фитилём есть всегда, но триггером она становится только на уровне.</div>
+</div>
+
+<!-- Развилка -->
+<div class="block">
+  <div class="bh"><div class="bn">⑂</div><div class="bt">Один вопрос перед H1</div></div>
+  <p style="text-align:center;font-size:16px;margin-bottom:6px"><b>Цена зашла в мою зону на D1 и осталась там?</b></p>
+  <div class="fork">
+    <div class="path no">
+      <div class="cond">НЕТ · в пустоте ИЛИ прошила насквозь</div>
+      <div class="big">✕ Остаюсь на D1</div>
+      <div class="sm">В воздухе любой «сигнал» — рябь. Прошила и закрылась за зоной — это пробой, тестировать нечего. Жду.</div>
+    </div>
+    <div class="path go">
+      <div class="cond">ДА · закрытия внутри зоны</div>
+      <div class="big">✓ Открываю H1</div>
+      <div class="sm">Смотрю 2–5 свечей у линии: пин / поглощение / ретест / ложный пробой. Есть → вход по плану. <b>Нет → сделки нет, и это нормальный финал.</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- Аналогия -->
+<div class="block">
+  <div class="bh"><div class="bn">🧭</div><div class="bt">Аналогия — запомни её</div></div>
+  <div class="analogy">
+    <b>D1 = навигатор ведёт к нужному дому</b> (район → улица → дом).<br>
+    <b>H1 = ты вышел из машины и ищешь конкретную дверь.</b><br><br>
+    Ты не разглядываешь двери, пока едешь по трассе — сначала <b>доедь до дома</b>. Спуститься на H1, когда цена ещё далеко от уровня, — это искать нужную дверь на скорости 120 по шоссе. Бессмысленно и опасно.
+  </div>
+</div>
+
+<!-- Почему не по D1 -->
+<div class="block">
+  <div class="bh"><div class="bn">?</div><div class="bt">Почему вход с H1, а не сразу по D1</div></div>
+  <p>Свеча D1 <b>слишком грубая для входа</b>: огромное тело → стоп за неё огромный → позиция крохотная и R:R убитый, да ещё сутки ждать подтверждения.</p>
+  <p>H1 даёт <b>точную свечу-отвержение НА уровне</b> → тесный стоп за её фитиль → <b>больше объём на те же 0.5% риска и жирнее R:R</b>. D1 говорит «жду разворот в этой зоне», H1 отвечает «вот свеча-триггер, вот вход и стоп».</p>
+  <div class="note">Прямая связь с <b>уроком 4.4</b>: чем тесней разумный стоп (а тесный стоп даёт именно H1 у уровня), тем больше монет берёшь на фиксированный риск 0.5%.</div>
+</div>
+
+<!-- H1-уровни, которых нет на D1 -->
+<div class="block">
+  <div class="bh"><div class="bn">⛰</div><div class="bt">H1-уровни, которых на D1 не видно</div></div>
+  <p>На H1 всплывают свои полки, которых на D1 нет вовсе, и цена реально может в них упереться. Пугаться не нужно — важно понять <b>ГДЕ</b> такой уровень стоит относительно твоей сделки. Мест всего два.</p>
+  <div class="split" style="margin-top:12px">
+    <div class="lv good">
+      <div class="name">① ВНУТРИ зоны входа</div>
+      <div class="role">подарок · уточняет вход</div>
+      <p>H1-полка внутри твоей D1-зоны — та самая линия, от которой рисуется 🟠 пин / поглощение. Вход <b>острее</b>, стоп <b>тесней</b>. Это помощник, а не помеха.</p>
+    </div>
+    <div class="lv bump">
+      <div class="name">② МЕЖДУ входом и целью</div>
+      <div class="role">ухаб · требует менеджмента</div>
+      <p>Полка на полпути к D1-цели, где цена может запнуться и отскочить. Вот это и смущает — но сделку она <b>не отменяет</b>. Ухаб на дороге, не разворот.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:14px"><b>Что делать с промежуточной полкой (② ухаб) — три правила:</b></p>
+  <div style="margin-top:10px">
+    <div class="lock"><div class="k">🧭</div><div class="lt"><b>Направление она не трогает.</b><small>Сторону задал D1 — сделка живёт. Промежуточная полка это не «выходи», а ухаб на пути.</small></div></div>
+    <div class="lock"><div class="k">🎯</div><div class="lt"><b>Тейк всё равно из СТРУКТУРЫ D1.</b><small>Цель = противоположная D1-граница (урок 4.4). НО если крупный, очевидный H1-уровень стоит прямо ПЕРЕД целью — целься консервативно, чуть НЕ доходя до него.</small></div></div>
+    <div class="lock"><div class="k">⚙️</div><div class="lt"><b>Полка на полпути = место для МЕНЕДЖМЕНТА, не для паники.</b><small>Дошла цена до неё — подтяни стоп в безубыток или сними часть позиции. Это этапный маркер управления, а не сигнал открывать/закрывать сделку целиком.</small></div></div>
+  </div>
+
+  <div class="note red"><b>Стоп — где именно?</b> За край твоей <b>триггер-свечи</b> (фитиль пина / край поглощения). Но триггер стоит НА D1-уровне → это и есть «за структуру». <b>Одно место, не два разных.</b> Ловушка — прятать стоп за <b>постороннюю промежуточную H1-полку (② ухаб)</b>, которая к входу не относится: она в зоне шума, вынесет дыханием рынка. Правило: <b>стоп за уровень, пробой которого убивает идею сделки</b> — а если фитиль триггера крошечный и торчит внутри зоны, прячь за дальнюю границу зоны, не впритык.</div>
+
+  <div class="analogy" style="margin-top:12px">
+    <b>Формула:</b> D1 = сторона + вход + цель (стратегия). H1 = где нажать + где по дороге ухабы (тактика).<br>
+    H1-уровень <b>никогда не командует</b> «входи / выходи из сделки» — он только уточняет вход и размечает этапы управления.
+  </div>
+</div>
+
+<!-- Схема: D1-зона vs мелкие H1-полки -->
+<div class="block">
+  <div class="bh"><div class="bn">🔬</div><div class="bt">Схема: «одно место» ≠ «свои H1-полки»</div></div>
+  <p>Разбор по реальным скринам BTC (июль). Слева D1, справа — H1 на ту же область. <b>Крупные зоны совпадают</b> (это лупа на одно место). А между ними на H1 торчат <b>свои полки</b>, которых на D1 нет вовсе.</p>
+  <div class="scheme">
+    <svg viewBox="0 0 760 400" role="img" aria-label="Сравнение уровней D1 и H1 по BTC">
+      <!-- заголовки панелей -->
+      <text x="185" y="26" text-anchor="middle" fill="#ff8c1a" font-size="15" font-weight="800">D1 — вся картина</text>
+      <text x="575" y="26" text-anchor="middle" fill="#4fd1c5" font-size="15" font-weight="800">🔎 H1 — лупа на ту же область</text>
+
+      <!-- === ПАНЕЛЬ D1 === -->
+      <rect x="20" y="40" width="330" height="336" rx="10" fill="#0d1017" stroke="#2a3242"/>
+      <!-- зона сопротивления 66-67k -->
+      <rect x="20" y="89" width="330" height="39" fill="#a855f728" stroke="#a855f766"/>
+      <text x="28" y="105" fill="#c9a2f5" font-size="12" font-weight="700">66–67k · сопротивление</text>
+      <!-- зона ~62k -->
+      <rect x="20" y="267" width="330" height="27" fill="#a855f728" stroke="#a855f766"/>
+      <text x="28" y="284" fill="#c9a2f5" font-size="12" font-weight="700">~62k · зона</text>
+      <!-- свечи D1 -->
+      <g stroke-width="1.4">
+        <line x1="180" y1="115" x2="180" y2="213" stroke="#a855f7"/><rect x="175.5" y="127" width="9" height="78" fill="#a855f7"/>
+        <line x1="202" y1="197" x2="202" y2="286" stroke="#a855f7"/><rect x="197.5" y="205" width="9" height="62" fill="#a855f7"/>
+        <line x1="224" y1="243" x2="224" y2="286" stroke="#ff8c1a"/><rect x="219.5" y="251" width="9" height="23" fill="#ff8c1a"/>
+        <line x1="246" y1="213" x2="246" y2="255" stroke="#ff8c1a"/><rect x="241.5" y="220" width="9" height="31" fill="#ff8c1a"/>
+        <line x1="268" y1="190" x2="268" y2="224" stroke="#ff8c1a"/><rect x="263.5" y="197" width="9" height="23" fill="#ff8c1a"/>
+        <line x1="290" y1="193" x2="290" y2="217" stroke="#a855f7"/><rect x="285.5" y="197" width="9" height="16" fill="#a855f7"/>
+        <line x1="312" y1="178" x2="312" y2="217" stroke="#ff8c1a"/><rect x="307.5" y="182" width="9" height="31" fill="#ff8c1a"/>
+      </g>
+      <!-- текущая цена D1 -->
+      <line x1="20" y1="182" x2="350" y2="182" stroke="#ff8c1a" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.8"/>
+      <text x="342" y="177" text-anchor="end" fill="#ff8c1a" font-size="11" font-weight="700">64.6k · сейчас</text>
+
+      <!-- === СОЕДИНИТЕЛИ «одно место» === -->
+      <line x1="350" y1="108" x2="410" y2="108" stroke="#4fd1c5" stroke-width="1.3" stroke-dasharray="4 3"/>
+      <line x1="350" y1="280" x2="410" y2="280" stroke="#4fd1c5" stroke-width="1.3" stroke-dasharray="4 3"/>
+      <text x="380" y="102" text-anchor="middle" fill="#4fd1c5" font-size="10" font-weight="800">одно</text>
+      <text x="380" y="123" text-anchor="middle" fill="#4fd1c5" font-size="10" font-weight="800">место</text>
+      <text x="380" y="274" text-anchor="middle" fill="#4fd1c5" font-size="10" font-weight="800">одно</text>
+      <text x="380" y="295" text-anchor="middle" fill="#4fd1c5" font-size="10" font-weight="800">место</text>
+
+      <!-- === ПАНЕЛЬ H1 === -->
+      <rect x="410" y="40" width="330" height="336" rx="10" fill="#0d1017" stroke="#2a3242"/>
+      <!-- те же зоны, яркая accent-рамка -->
+      <rect x="410" y="89" width="330" height="39" fill="#a855f728" stroke="#4fd1c5" stroke-width="1.6"/>
+      <text x="418" y="105" fill="#7fe3d9" font-size="11.5" font-weight="700">= та же зона D1</text>
+      <rect x="410" y="267" width="330" height="27" fill="#a855f728" stroke="#4fd1c5" stroke-width="1.6"/>
+      <text x="418" y="284" fill="#7fe3d9" font-size="11.5" font-weight="700">= та же зона D1</text>
+      <!-- мелкие H1-полки -->
+      <line x1="415" y1="143" x2="735" y2="143" stroke="#ffd23f" stroke-width="1.4" stroke-dasharray="6 4"/>
+      <line x1="415" y1="174" x2="735" y2="174" stroke="#ffd23f" stroke-width="1.4" stroke-dasharray="6 4"/>
+      <line x1="415" y1="220" x2="735" y2="220" stroke="#ffd23f" stroke-width="1.4" stroke-dasharray="6 4"/>
+      <text x="732" y="139" text-anchor="end" fill="#ffd23f" font-size="10.5" font-weight="700">65.6k</text>
+      <text x="732" y="170" text-anchor="end" fill="#ffd23f" font-size="10.5" font-weight="700">64.8k</text>
+      <text x="732" y="216" text-anchor="end" fill="#ffd23f" font-size="10.5" font-weight="700">63.6k</text>
+      <!-- свечи H1 -->
+      <g stroke-width="1.3">
+        <line x1="442" y1="205" x2="442" y2="224" stroke="#a855f7"/><rect x="438" y="205" width="8" height="15" fill="#a855f7"/>
+        <line x1="462" y1="201" x2="462" y2="224" stroke="#ff8c1a"/><rect x="458" y="205" width="8" height="15" fill="#ff8c1a"/>
+        <line x1="482" y1="170" x2="482" y2="209" stroke="#ff8c1a"/><rect x="478" y="174" width="8" height="31" fill="#ff8c1a"/>
+        <line x1="502" y1="170" x2="502" y2="186" stroke="#a855f7"/><rect x="498" y="174" width="8" height="8" fill="#a855f7"/>
+        <line x1="522" y1="154" x2="522" y2="186" stroke="#ff8c1a"/><rect x="518" y="158" width="8" height="24" fill="#ff8c1a"/>
+        <line x1="542" y1="139" x2="542" y2="162" stroke="#ff8c1a"/><rect x="538" y="143" width="8" height="15" fill="#ff8c1a"/>
+        <line x1="562" y1="139" x2="562" y2="154" stroke="#a855f7"/><rect x="558" y="143" width="8" height="7" fill="#a855f7"/>
+        <line x1="582" y1="146" x2="582" y2="178" stroke="#a855f7"/><rect x="578" y="150" width="8" height="24" fill="#a855f7"/>
+        <line x1="602" y1="170" x2="602" y2="194" stroke="#a855f7"/><rect x="598" y="174" width="8" height="16" fill="#a855f7"/>
+        <line x1="622" y1="178" x2="622" y2="194" stroke="#ff8c1a"/><rect x="618" y="182" width="8" height="8" fill="#ff8c1a"/>
+        <line x1="640" y1="178" x2="640" y2="190" stroke="#ff8c1a"/><rect x="636" y="182" width="8" height="4" fill="#ff8c1a"/>
+      </g>
+      <!-- текущая цена H1 -->
+      <line x1="410" y1="182" x2="740" y2="182" stroke="#ff8c1a" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.8"/>
+      <!-- скобка «пустота» -->
+      <text x="575" y="242" text-anchor="middle" fill="#ff5470" font-size="11.5" font-weight="800">цена ЗДЕСЬ — в пустоте</text>
+      <text x="575" y="258" text-anchor="middle" fill="#ff5470" font-size="11.5" font-weight="800">между зонами → руки прочь</text>
+    </svg>
+    <div class="leg">
+      <span><i style="border-color:#4fd1c5"></i> = одно место (зона D1 под лупой)</span>
+      <span><i style="border-color:#ffd23f;border-top-style:dashed"></i> H1-полки — на D1 их нет</span>
+      <span><span class="box" style="background:#a855f728;border-color:#a855f766"></span> D1-зона</span>
+    </div>
+  </div>
+  <div class="note red"><b>Вывод по картинке:</b> полки 63.6 / 64.8 / 65.6k существуют только на H1 и сейчас окружают цену — это чистый «② ухаб в пустоте». Вход появится, лишь когда цена дойдёт до <b>62k</b> (ищем 🟠 разворот в лонг) или <b>66k</b> (ищем 🟣 отбой в шорт) — там H1-зона ляжет на D1-зону, и лупа заработает по делу.</div>
+</div>
+
+<!-- Недельный ритм -->
+<div class="block">
+  <div class="bh"><div class="bn">📅</div><div class="bt">Как это ложится на свинг (недельный ритм)</div></div>
+  <ol class="rhythm">
+    <li><b>Начало недели:</b> размечаю D1 — тренд, уровни/зоны. Строю гипотезу: «жду цену к зоне X → там сделка».</li>
+    <li><b>В течение недели:</b> проверяю пару раз в день <b>на D1</b> один вопрос — цена подошла к уровню?</li>
+    <li><b>Нет</b> → руки прочь, H1 не открываю, живу дальше.</li>
+    <li><b>Да, тестирует зону</b> → открываю H1, ищу триггер → вход по плану.</li>
+  </ol>
+  <div class="note red"><b>Ловушка:</b> сидеть на H1 весь день «на всякий случай». Так ты увидишь десять фальшивых сетапов в пустоте. H1 достаётся <b>к уровню</b>, а не «чтобы следить».</div>
+</div>
+
+<div class="xlinks">
+  <a class="xlk" href="entry-checklist.html">✅ Чек-лист входа</a>
+  <a class="xlk" href="m3-context.html">🧠 Модуль 3 · Контекст</a>
+  <a class="xlk" href="zones-cheatsheet.html">🧱 Разметка зон</a>
+  <a class="xlk" href="patterns-cheatsheet.html">🕯 Свечи-сигналы</a>
+  <a class="xlk" href="index.html">← Все шпаргалки</a>
+</div>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · D1 → H1</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

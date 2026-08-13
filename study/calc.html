@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькуляторы — позиция, сетка круглых, дистанция</title>
+<style>
+  :root{
+    --up:#ff8c1a; --up-dim:#ff8c1a22; --up-bd:#ff8c1a55;
+    --down:#a855f7; --down-dim:#a855f722; --down-bd:#a855f755;
+    --bg:#0d1017; --card:#161b26; --card2:#1d2432; --line:#2a3242;
+    --txt:#e7ecf5; --muted:#93a0b5; --accent:#4fd1c5; --warn:#ffd23f;
+    --go:#3ddc84; --go-dim:#3ddc8418; --no:#ff5470; --no-dim:#ff547018;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:32px 18px 80px;max-width:1080px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  b,strong{color:#fff;font-weight:700}
+  p{margin-bottom:10px} p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  .accent{color:var(--accent);font-weight:700}
+
+  header{text-align:center;margin-bottom:30px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:660px;margin:0 auto}
+
+  /* оглавление */
+  .toc{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+  .toc a{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:13.5px;font-weight:700;color:var(--txt)}
+  .toc a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+  section{margin-top:36px;scroll-margin-top:20px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+  .h .lsn{margin-left:auto;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  /* калькулятор позиции */
+  .calc{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--accent);border-radius:16px;padding:22px}
+  .calc .cin{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:780px){.calc .cin{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.calc .cin{grid-template-columns:1fr}}
+  .fld label{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .fld input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--txt);font:inherit;font-size:15px;font-weight:700;padding:9px 11px}
+  .fld input:focus{outline:none;border-color:var(--accent)}
+  .side{margin-top:14px;text-align:center;font-size:13px;color:var(--muted)}
+  .side b{font-size:15px}
+  .out{margin-top:14px;display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:780px){.out{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.out{grid-template-columns:1fr}}
+  .o{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .o .ok{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+  .o .ov{font-size:19px;font-weight:800;color:var(--accent)}
+  .o .os{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .o.rr .ov{font-size:21px}
+  .cv{margin-top:14px;border-radius:12px;padding:14px 18px;border:2px solid;text-align:center;font-weight:800;font-size:16px}
+  .cv.go{background:var(--go-dim);border-color:var(--go);color:var(--go)}
+  .cv.no{background:var(--no-dim);border-color:var(--no);color:var(--no)}
+  .cv small{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:5px}
+  .cbtn{margin-top:12px;text-align:center}
+  .btn{background:var(--card2);border:1px solid var(--line);color:var(--txt);font:inherit;font-weight:700;font-size:13.5px;padding:8px 16px;border-radius:9px;cursor:pointer}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* калькулятор сетки круглых */
+  .gc-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;align-items:stretch}
+  .gc-lab{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .gc-lab input{background:#12161f;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--txt);font:700 20px/1.2 inherit;width:100%}
+  .gc-lab input:focus{outline:none;border-color:var(--accent)}
+  .gc-out{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center}
+  .gc-out .gc-k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .gc-out .gc-v{font-size:20px;font-weight:800;color:var(--accent);margin-top:2px}
+  .gc-verdict{margin-top:12px;border-radius:10px;padding:10px 14px;font-size:14px;border:1px dashed var(--line);background:#12161f;color:var(--muted)}
+  .gc-verdict b{color:var(--warn)}
+  .gc-grid{margin-top:14px;display:flex;flex-direction:column;gap:4px}
+  .gc-l{display:flex;align-items:center;gap:12px;background:#12161f;border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:14.5px}
+  .gc-l .t{flex:0 0 26px;text-align:center}
+  .gc-l .p{font-weight:800;flex:0 0 110px}
+  .gc-l .d{color:var(--muted);font-size:13px}
+  .gc-l.fire{border-color:var(--warn);background:#1c1a12}
+  .gc-l.fire .p{color:var(--warn)}
+  .gc-l.half .p{color:var(--txt)}
+  .gc-l.dot-l .p{color:var(--muted)}
+  .gc-l.draw{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+  .gc-l:not(.draw):not(.now){opacity:.62}
+  .gc-l.now{border-color:var(--accent);background:#10201f}
+  .gc-l.now .p{color:var(--accent)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Инструмент · все расчёты в одном месте</div>
+  <h1>Калькуляторы — <span class="em">цифры сделки</span></h1>
+  <p class="sub">Три расчёта, которые нужны при разметке и перед входом. Считай здесь, а не в уме: арифметика на глаз — источник половины ошибок в плане.</p>
+  <div class="toc">
+    <a href="#position">🧮 Позиция и R:R</a>
+    <a href="#grid">📏 Сетка круглых</a>
+    <a href="#dist">💨 Далеко ли до уровня</a>
+  </div>
+</header>
+
+<!-- 1. ПОЗИЦИЯ -->
+<section id="position">
+  <div class="h"><div class="n">🧮</div><h2>Позиция, риск и R:R</h2><div class="lsn">урок 4.4</div></div>
+
+  <div class="calc">
+    <div class="cin">
+      <div class="fld"><label>Депозит, $</label><input type="number" id="dep" value="200" step="any"></div>
+      <div class="fld"><label>Риск, %</label><input type="number" id="rsk" value="0.5" step="any"></div>
+      <div class="fld"><label>Вход</label><input type="number" id="ent" value="3480" step="any"></div>
+      <div class="fld"><label>Стоп</label><input type="number" id="stp" value="3570" step="any"></div>
+      <div class="fld"><label>Цель (структура)</label><input type="number" id="tgt" value="3000" step="any"></div>
+    </div>
+
+    <div class="side" id="side">—</div>
+
+    <div class="out">
+      <div class="o"><div class="ok">Риск</div><div class="ov" id="oRisk">—</div><div class="os">теряешь, если стоп</div></div>
+      <div class="o"><div class="ok">Дистанция до стопа</div><div class="ov" id="oDist">—</div><div class="os" id="oDistPts">—</div></div>
+      <div class="o"><div class="ok">Объём позиции</div><div class="ov" id="oSize">—</div><div class="os" id="oShare">—</div></div>
+      <div class="o"><div class="ok">Объём в монете</div><div class="ov" id="oCoin">—</div><div class="os">штук</div></div>
+      <div class="o rr"><div class="ok">R : R</div><div class="ov" id="oRR">—</div><div class="os" id="oRew">—</div></div>
+    </div>
+
+    <div class="cv no" id="cv">Заполни поля</div>
+
+    <div class="cbtn"><button class="btn" id="reset">↺ Сбросить к примеру</button></div>
+  </div>
+
+  <div class="mnemo">
+    <b>Порядок — вход почти последний:</b> стоп → структурная цель → R:R ≥ 1:2? → дистанция % → объём.<br>
+    Стоп ставишь <b>первым</b> — там, где идея мертва. Цель берёшь <b>из структуры</b> — ближайшее препятствие, о которое цена реально спотыкалась. Если R:R &lt; 1:2 — калькулятор краснеет, и это <b>не повод двигать стоп</b>, а повод пропустить сделку.<br>
+    Сторона определяется сама: стоп <b>выше</b> входа = 🟣 шорт, стоп <b>ниже</b> = 🟠 лонг.<br>
+    Пример в полях — сделка с экзамена №4: шорт ETH 3480, стоп за фитиль 3570, цель — нижняя граница диапазона 3000.
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <p><b>Формула:</b> <span class="accent">объём ($) = (депозит × риск%) ÷ дистанция до стопа в %</span></p>
+    <p class="muted">Убыток в долларах <b>всегда один</b> — меняется только объём. Ближе стоп → крупнее позиция на тот же риск.</p>
+    <p class="muted"><b>R:R убивает не стоп, а поздний вход.</b> Стоп и цель диктует структура — они не твои. Вход — единственная переменная в твоих руках: та же идея с входом на закрытии триггерной свечи даёт 1:3, а «для подтверждения подожду ещё» превращает её в 1:1.5. Оговорка: ближе ≠ без триггера, граница — свеча закрылась.</p>
+  </div>
+</section>
+
+<!-- 2. СЕТКА КРУГЛЫХ -->
+<section id="grid">
+  <div class="h"><div class="n">📏</div><h2>Сетка круглых чисел</h2><div class="lsn">углубление 2.4</div></div>
+
+  <div class="card">
+    <p>Вбей текущую цену инструмента — получишь рабочий шаг и линии вокруг цены. Норма шага: <b class="accent">3–6% от цены</b> (≈1–2 дневных хода).</p>
+    <p class="muted">Шаг считается <b>от цены</b>, а не берётся готовым числом. «ETH — каждые 500» верно при цене $3000 и абсурдно при $1600, где 500 = треть цены.</p>
+
+    <div class="gc-row">
+      <label class="gc-lab">Цена сейчас
+        <input id="gcPrice" type="number" step="any" placeholder="напр. 0.63" value="0.63">
+      </label>
+      <div class="gc-out">
+        <div class="gc-k">Рабочий шаг</div>
+        <div class="gc-v" id="gcStep">—</div>
+      </div>
+      <div class="gc-out">
+        <div class="gc-k">Шаг в % от цены</div>
+        <div class="gc-v" id="gcPct">—</div>
+      </div>
+    </div>
+    <div class="gc-verdict" id="gcVerdict">—</div>
+    <div class="gc-verdict" id="gcWorkzone" style="border-style:solid;border-color:var(--accent);color:var(--txt)">—</div>
+
+    <div class="gc-grid" id="gcLines"></div>
+    <p class="muted" style="font-size:13px;margin-top:12px"><b class="accent">★ — линии, которые чертим на графике</b> (сильные И внутри рабочего экрана). Остальные приглушены: рядовые ◦ не чертим вообще, дальние — вне коридора.<br>
+    🔥 — главная (кратна 10 шагам, сильнейший магнит) · ◆ — половина (5 шагов) · ▪ — усиленная (2 шага) · ◦ — рядовая линия сетки. <b>Круглое — ориентир и гиря конфлюенса, не сигнал входа.</b></p>
+    <div class="mnemo" style="margin-top:12px"><b>Шаг — счётная единица, а не линии на графике.</b> Он нужен, чтобы вычислить ярусы и рабочий экран. <b>На график чертим только 🔥 и ◆, плюс ▪ у самой цены; рядовые ◦ не чертим</b> — роль масштабной линейки уже выполняет ценовая шкала, а как уровни рядовые слабы. Единственное, ради чего их держат в уме: <b>цель, попавшая сразу ЗА круглое, переносится ПЕРЕД ним.</b></div>
+  </div>
+
+  <div class="mnemo">
+    <b>Чем круглее — тем сильнее.</b> Главные (максимум нулей: 100000 · 10000 · 1000 · 100 · 10 · 1.00) держат крепче половинок (50000 · 500 · 0.50), половинки — крепче долек (25000 · 0.25). Долька — не гиря конфлюенса.<br>
+    Наноси <b>заранее</b> тонким пунктиром, даже далёкие линии: это карта ориентиров, а не сигнал. Подробнее — <a href="zones-cheatsheet.html">разметка зон</a>.
+  </div>
+</section>
+
+<!-- 3. ДИСТАНЦИЯ -->
+<section id="dist">
+  <div class="h"><div class="n">💨</div><h2>Далеко ли цена до уровня</h2><div class="lsn">реп №15</div></div>
+
+  <div class="card">
+    <p>Отвечает на вопрос «это уже подход или ещё воздух» — меряем не в пунктах, а в <b class="accent">дневных ходах</b>. Цена берётся из поля выше.</p>
+    <div class="gc-row">
+      <label class="gc-lab">Уровень / граница зоны
+        <input id="gcLevel" type="number" step="any" placeholder="напр. 0.72">
+      </label>
+      <label class="gc-lab">Дневной ход (ATR), %
+        <input id="gcAtr" type="number" step="any" value="4">
+      </label>
+      <div class="gc-out">
+        <div class="gc-k">Дистанция</div>
+        <div class="gc-v" id="gcDist">—</div>
+      </div>
+      <div class="gc-out">
+        <div class="gc-k">В дневных ходах</div>
+        <div class="gc-v" id="gcAtrN">—</div>
+      </div>
+    </div>
+    <div class="gc-verdict" id="gcDistVerdict">Введи уровень.</div>
+  </div>
+
+  <div class="mnemo">
+    <b>Зачем это нужно.</b> Ветки плана (ЕСЛИ → ТО) заряжаются только на уровень, до которого цена может дойти ближайшим ходом — <b>≤1 дневного хода</b>. Дальше 2 ходов — план превращается в выдумку: цифры входа, стопа и R:R берутся из головы, потому что на графике их ещё нет.<br>
+    В воздухе правильный ответ — <b>«жду подхода к краю»</b>, без цифр.
+  </div>
+</section>
+
+<footer>
+  <div class="m">Калькуляторы · Price Action</div>
+  Все шпаргалки: <a href="index.html">обложка</a> · Чек-лист входа: <a href="entry-checklist.html">интерактив</a> · Журнал сделок: <a href="../journal/journal.html">journal</a><br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+<script>
+/* --- 1. Калькулятор позиции --- */
+(function(){
+  var ids = ['dep','rsk','ent','stp','tgt'];
+  var el = {};
+  ids.forEach(function(i){ el[i] = document.getElementById(i); });
+
+  var oRisk = document.getElementById('oRisk'),
+      oDist = document.getElementById('oDist'),
+      oDistPts = document.getElementById('oDistPts'),
+      oSize = document.getElementById('oSize'),
+      oShare = document.getElementById('oShare'),
+      oCoin = document.getElementById('oCoin'),
+      oRR = document.getElementById('oRR'),
+      oRew = document.getElementById('oRew'),
+      side = document.getElementById('side'),
+      cv = document.getElementById('cv');
+
+  var DEFAULTS = {dep:200, rsk:0.5, ent:3480, stp:3570, tgt:3000};
+
+  function money(n){
+    return '$' + n.toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function dash(){
+    [oRisk,oDist,oDistPts,oSize,oShare,oCoin,oRR,oRew].forEach(function(o){ o.textContent = '—'; });
+  }
+
+  function update(){
+    var dep = parseFloat(el.dep.value),
+        rsk = parseFloat(el.rsk.value),
+        ent = parseFloat(el.ent.value),
+        stp = parseFloat(el.stp.value),
+        tgt = parseFloat(el.tgt.value);
+
+    if(!isFinite(dep) || !isFinite(rsk) || !isFinite(ent) || !isFinite(stp) ||
+       dep <= 0 || rsk <= 0 || ent <= 0 || stp <= 0){
+      side.innerHTML = '—';
+      dash();
+      cv.className = 'cv no';
+      cv.textContent = 'Заполни депозит, риск, вход и стоп';
+      return;
+    }
+    if(stp === ent){
+      side.innerHTML = '—';
+      dash();
+      cv.className = 'cv no';
+      cv.innerHTML = 'Стоп не может совпадать со входом<small>Стоп — это точка, где идея МЕРТВА. Найди её в структуре.</small>';
+      return;
+    }
+
+    var isShort = stp > ent;
+    side.innerHTML = isShort
+      ? 'Сторона: <b style="color:var(--down)">🟣 ШОРТ</b> <span class="muted">(стоп выше входа)</span>'
+      : 'Сторона: <b style="color:var(--up)">🟠 ЛОНГ</b> <span class="muted">(стоп ниже входа)</span>';
+
+    var riskUsd  = dep * rsk / 100;
+    var distPts  = Math.abs(ent - stp);
+    var distPct  = distPts / ent * 100;
+    var sizeUsd  = riskUsd / (distPct / 100);
+    var coins    = sizeUsd / ent;
+    var share    = sizeUsd / dep * 100;
+
+    oRisk.textContent    = money(riskUsd);
+    oDist.textContent    = distPct.toFixed(2) + '%';
+    oDistPts.textContent = distPts.toLocaleString('ru-RU',{maximumFractionDigits:2}) + ' пунктов';
+    oSize.textContent    = money(sizeUsd);
+    oShare.textContent   = share.toFixed(1) + '% депозита' + (share > 100 ? ' ⚠ больше депо!' : '');
+    oCoin.textContent    = coins.toFixed(coins < 1 ? 4 : 2);
+
+    if(!isFinite(tgt) || tgt <= 0){
+      oRR.textContent = '—';
+      oRew.textContent = 'укажи цель';
+      cv.className = 'cv no';
+      cv.innerHTML = 'Нет структурной цели → нет R:R → нет сделки<small>Цель берётся из СТРУКТУРЫ: ближайшее препятствие, о которое цена спотыкалась. Не «×2 на глаз».</small>';
+      return;
+    }
+
+    var tgtWrongSide = isShort ? (tgt >= ent) : (tgt <= ent);
+    if(tgtWrongSide){
+      oRR.textContent = '—';
+      oRew.textContent = 'цель не с той стороны';
+      cv.className = 'cv no';
+      cv.innerHTML = 'Цель стоит не по ходу сделки<small>' + (isShort
+        ? 'Шорт → цель должна быть НИЖЕ входа.'
+        : 'Лонг → цель должна быть ВЫШЕ входа.') + ' Сверь сторону — конец должен сходиться с началом.</small>';
+      return;
+    }
+
+    var rewPts = Math.abs(tgt - ent);
+    var rr     = rewPts / distPts;
+
+    oRR.textContent  = '1 : ' + rr.toFixed(2);
+    oRew.textContent = 'прибыль ' + money(riskUsd * rr);
+
+    if(rr >= 2){
+      cv.className = 'cv go';
+      cv.innerHTML = '✓ R:R ' + rr.toFixed(2) + ' — фильтр пройден<small>Риск ' + money(riskUsd) +
+        ' против ' + money(riskUsd * rr) + '. Стоп не двигаем. Дальше — чек-лист: контекст, локация, триггер, дисциплина.</small>';
+    } else {
+      cv.className = 'cv no';
+      cv.innerHTML = '✕ R:R ' + rr.toFixed(2) + ' — меньше 1:2, СДЕЛКИ НЕТ<small>И это НЕ повод подвинуть стоп: двигая его, ты двигаешь ЦИФРУ, а не СТРУКТУРУ. Честный путь — лучший вход или подождать.</small>';
+    }
+  }
+
+  ids.forEach(function(i){ el[i].addEventListener('input', update); });
+  document.getElementById('reset').addEventListener('click', function(){
+    ids.forEach(function(i){ el[i].value = DEFAULTS[i]; });
+    update();
+  });
+  update();
+})();
+
+/* --- 2. Сетка круглых + 3. Дистанция --- */
+(function(){
+  var inp = document.getElementById('gcPrice');
+  if(!inp) return;
+  var elStep = document.getElementById('gcStep'),
+      elPct  = document.getElementById('gcPct'),
+      elVer  = document.getElementById('gcVerdict'),
+      elGrid = document.getElementById('gcLines');
+
+  // «Красивые» шаги: только 1 и 5 в любом разряде — психологически круглые
+  function candidates(price){
+    var out = [], k;
+    for(k = -6; k <= 6; k++){
+      out.push(1 * Math.pow(10, k));
+      out.push(5 * Math.pow(10, k));
+    }
+    return out.filter(function(s){ return s < price; });
+  }
+  function pickStep(price){
+    var cand = candidates(price), target = price * 0.045;
+    var inNorm = cand.filter(function(s){ var p = s / price; return p >= 0.03 && p <= 0.06; });
+    var pool = inNorm.length ? inNorm : cand;
+    var best = pool[0];
+    pool.forEach(function(s){
+      if(Math.abs(Math.log(s / target)) < Math.abs(Math.log(best / target))) best = s;
+    });
+    return best;
+  }
+  function decimals(step){
+    var d = Math.max(0, Math.ceil(-Math.log10(step)) + 1);
+    return Math.min(d, 8);
+  }
+  function fmt(v, d){
+    return v.toLocaleString('ru-RU', {minimumFractionDigits: d, maximumFractionDigits: d});
+  }
+  function multipleOf(v, m){
+    var r = Math.abs(v / m - Math.round(v / m));
+    return r < 1e-6;
+  }
+
+  function render(){
+    var price = parseFloat(inp.value);
+    if(!(price > 0)){
+      elStep.textContent = '—'; elPct.textContent = '—';
+      elVer.innerHTML = 'Введи цену.'; elGrid.innerHTML = '';
+      return;
+    }
+    var step = pickStep(price), pct = step / price * 100, d = decimals(step);
+
+    elStep.textContent = fmt(step, d);
+    elPct.textContent = pct.toFixed(1) + '%';
+
+    if(pct >= 3 && pct <= 6){
+      elVer.innerHTML = '✅ Шаг <b>' + fmt(step, d) + '</b> в норме (' + pct.toFixed(1) + '% от цены). Наноси эти линии тонким пунктиром.';
+    } else if(pct > 6 && pct <= 10){
+      elVer.innerHTML = '◑ Шаг <b>' + fmt(step, d) + '</b> (' + pct.toFixed(1) + '%) — чуть крупнее нормы, но рабочий: более мелкий «красивый» шаг здесь дал бы некруглые линии. Пользуйся, держа в голове, что между линиями цена может идти неделю.';
+    } else if(pct < 3){
+      elVer.innerHTML = '⚠️ Ближайший «красивый» шаг — <b>' + fmt(step, d) + '</b> (' + pct.toFixed(1) + '%), это <b>мельче нормы</b>: линий много, магнитом перестаёт быть любая. Держи в работе только 🔥 и ◆, дольки игнорируй.';
+    } else {
+      elVer.innerHTML = '⚠️ Ближайший «красивый» шаг — <b>' + fmt(step, d) + '</b> (' + pct.toFixed(1) + '%), это <b>крупнее нормы</b>: между линиями цена идёт неделями. Ориентируйся в первую очередь на структурные зоны, круглое — только как дальний магнит.';
+    }
+
+    // границы рабочего экрана: ТРЕТЬЯ ЛИНИЯ СЕТКИ в каждую сторону от цены
+    // (считаем именно линии, как глазами на графике, а не «цена ± 3 шага»)
+    var eps = step * 1e-9;
+    var wzLo = Math.floor((price - eps) / step) * step - step * 2;
+    var wzHi = Math.ceil((price + eps) / step) * step + step * 2;
+    var elWz = document.getElementById('gcWorkzone');
+    if(elWz){
+      elWz.innerHTML = '🖥 <b>Рабочий экран: ' + fmt(wzLo, d) + ' — ' + fmt(wzHi, d) + '</b> ' +
+        '(третья линия сетки вниз и вверх от цены). Уровни внутри — размечаем; всё, что дальше, держим в памяти, но на график не наносим. ' +
+        'Считать проценты не нужно: просто отсчитай три линии в каждую сторону — так же, как глазами на графике. ' +
+        'Границы рабочего диапазона наносим всегда, даже если они за коридором.';
+    }
+
+    var base = Math.round(price / step) * step, html = '', i, priceShown = false;
+    for(i = 5; i >= -5; i--){
+      var v = base + i * step;
+      if(v <= 0) continue;
+      if(Math.abs(v - price) < step * 1e-6) priceShown = true;
+      if(!priceShown && v < price){
+        html += '<div class="gc-l now"><span class="t">▶</span><span class="p">' + fmt(price, d) +
+                '</span><span class="d">цена сейчас</span></div>';
+        priceShown = true;
+      }
+      var cls, tag, strong;
+      if(multipleOf(v, step * 10)){ cls = 'fire'; tag = '🔥'; strong = true; }
+      else if(multipleOf(v, step * 5)){ cls = 'half'; tag = '◆'; strong = true; }
+      else if(multipleOf(v, step * 2)){ cls = 'half'; tag = '▪'; strong = true; }
+      else { cls = 'dot-l'; tag = '◦'; strong = false; }
+
+      // ★ — линия идёт на график: она в коридоре рабочего экрана И достаточно сильная
+      var inZone = v >= wzLo - step * 1e-6 && v <= wzHi + step * 1e-6;
+      var draw = inZone && strong;
+
+      var dist = (v - price) / price * 100;
+      var onLine = Math.abs(v - price) < step * 1e-6;
+      html += '<div class="gc-l ' + cls + (onLine ? ' now' : '') + (draw ? ' draw' : '') + '">' +
+                '<span class="t">' + tag + '</span>' +
+                '<span class="p">' + (draw ? '★ ' : '') + fmt(v, d) + '</span>' +
+                '<span class="d">' + (onLine ? 'цена стоит ровно на линии' :
+                  (dist >= 0 ? '+' : '') + dist.toFixed(1) + '% от цены') +
+                  (draw ? ' · <b style="color:var(--accent)">чертим</b>' :
+                    (inZone ? ' · рядовая, не чертим' : ' · вне рабочего экрана')) + '</span>' +
+              '</div>';
+    }
+    elGrid.innerHTML = html;
+  }
+
+  var lvl = document.getElementById('gcLevel'),
+      atr = document.getElementById('gcAtr'),
+      elDist = document.getElementById('gcDist'),
+      elAtrN = document.getElementById('gcAtrN'),
+      elDV = document.getElementById('gcDistVerdict');
+
+  function renderDist(){
+    var price = parseFloat(inp.value), L = parseFloat(lvl.value), a = parseFloat(atr.value);
+    if(!(price > 0) || !(L > 0)){
+      elDist.textContent = '—'; elAtrN.textContent = '—';
+      elDV.innerHTML = 'Введи уровень.';
+      return;
+    }
+    var pct = (L - price) / price * 100;
+    var abs = Math.abs(pct);
+    elDist.textContent = (pct >= 0 ? '+' : '−') + abs.toFixed(2) + '%';
+    if(!(a > 0)){ elAtrN.textContent = '—'; elDV.innerHTML = 'Укажи дневной ход в %.'; return; }
+    var n = abs / a;
+    elAtrN.textContent = n.toFixed(1);
+    var dir = pct >= 0 ? 'выше' : 'ниже';
+    if(n <= 1){
+      elDV.innerHTML = '🎯 Уровень <b>' + dir + '</b> на ' + abs.toFixed(2) + '% = <b>' + n.toFixed(1) +
+        ' дневного хода</b>. Это <b>подход</b>, а не воздух: цена может дойти за сегодня–завтра. Ветки должны быть заряжены, стоп и цель посчитаны заранее.';
+    } else if(n <= 2){
+      elDV.innerHTML = '⏳ Уровень ' + dir + ' на ' + abs.toFixed(2) + '% = <b>' + n.toFixed(1) +
+        ' дневных хода</b>. Близко, но не сегодня. Держи ветку заряженной, к экрану не приклеивайся.';
+    } else {
+      elDV.innerHTML = '💨 Уровень ' + dir + ' на ' + abs.toFixed(2) + '% = <b>' + n.toFixed(1) +
+        ' дневных ходов</b>. Вот это и есть <b>воздух</b> — цена в no-man\'s-land, руки прочь, разметка ждёт.';
+    }
+  }
+
+  [lvl, atr].forEach(function(e){ if(e) e.addEventListener('input', renderDist); });
+  inp.addEventListener('input', function(){ render(); renderDist(); });
+  render(); renderDist();
+})();
+</script>
+
+</body>
+</html>

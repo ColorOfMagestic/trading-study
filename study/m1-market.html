@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка · Модуль 1 — Как устроен крипторынок</title>
+<style>
+  :root{
+    --up:#ff8c1a;        /* 🟠 рост / бычье движение */
+    --up-dim:#ff8c1a22;
+    --up-bd:#ff8c1a55;
+    --down:#a855f7;      /* 🟣 падение / медвежье движение */
+    --down-dim:#a855f722;
+    --down-bd:#a855f755;
+    --bg:#0d1017;
+    --card:#161b26;
+    --card2:#1d2432;
+    --line:#2a3242;
+    --txt:#e7ecf5;
+    --muted:#93a0b5;
+    --accent:#4fd1c5;
+    --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding:32px 18px 80px;
+    max-width:1080px;
+    margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:640px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px}
+  p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+
+  /* два столбца */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .side{border-radius:14px;padding:20px;border:1px solid}
+  .side.plus{background:var(--up-dim);border-color:var(--up-bd)}
+  .side.minus{background:var(--down-dim);border-color:var(--down-bd)}
+  .side .sign{font-size:26px;font-weight:900;line-height:1}
+  .side.plus .sign{color:var(--up)} .side.minus .sign{color:var(--down)}
+  .side h3{font-size:15px;margin:8px 0 12px;font-weight:700}
+  .side ul{list-style:none;font-size:14.5px}
+  .side li{padding:4px 0 4px 20px;position:relative;color:var(--txt)}
+  .side li::before{content:"›";position:absolute;left:2px;color:var(--muted);font-weight:800}
+  .side .out{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-weight:700;font-size:14.5px}
+  .side.plus .out{color:var(--up)} .side.minus .out{color:var(--down)}
+
+  /* главный закон */
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px 24px 20px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:18px;position:relative}
+  .law .big:last-child{margin-bottom:0}
+  .law p{position:relative;color:var(--muted)}
+  .law p b{color:#fff}
+
+  /* сессии */
+  .sess{display:flex;flex-direction:column;gap:10px}
+  .srow{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;font-size:13.5px}
+  .sname{color:var(--muted);font-weight:700}
+  .strack{position:relative;height:26px;background:var(--card2);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .sbar{position:absolute;top:0;bottom:0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:#0d1017}
+  .sbar.asia{background:#4a5568cc;color:#e7ecf5}
+  .sbar.london{background:var(--accent);opacity:.8}
+  .sbar.usa{background:var(--up);opacity:.85}
+  .sbar.peak{background:var(--warn)}
+  .axis{display:grid;grid-template-columns:96px 1fr;gap:12px;font-size:11px;color:var(--muted);margin-top:2px}
+  .axis .ticks{display:flex;justify-content:space-between}
+
+  /* три колонки */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:680px){.roles{grid-template-columns:1fr}}
+  .role{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .role .rt{font-weight:800;font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:var(--accent)}
+  .role p{font-size:14px;color:var(--muted)}
+  .role p b{color:var(--txt)}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  /* карточка-итог */
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 1 · Как устроен крипторынок</div>
+  <h1>Фундамент — <span class="em">спот, ликвидность, время</span></h1>
+  <p class="sub">С чего строится всё остальное: чем торгуем, кто и зачем двигает цену, и когда рынок вообще живой.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост / движение вверх</span>
+    <span><i class="dot d"></i> 🟣 падение / движение вниз</span>
+  </div>
+</header>
+
+<!-- 1. Спот vs перп -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Спот vs перпетуал · чем торгуем</h2></div>
+  <div class="grid2">
+    <div class="side plus">
+      <div class="sign">СПОТ</div>
+      <h3>Наш инструмент весь курс</h3>
+      <ul>
+        <li><b>Владеешь монетой</b> по-настоящему</li>
+        <li>Нельзя потерять <b>больше вложенного</b></li>
+        <li>Без плеча = без принудительного закрытия</li>
+      </ul>
+      <div class="out">✓ безопасная база для учёбы</div>
+    </div>
+    <div class="side minus">
+      <div class="sign">ПЕРП</div>
+      <h3>Ставка с плечом (не торгуем)</h3>
+      <ul>
+        <li>Ставка на цену <b>с плечом</b></li>
+        <li>Движение против → <b>ликвидация</b></li>
+        <li>Малое движение обнуляет депозит</li>
+      </ul>
+      <div class="out">✕ плечо = главная опасность</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <p><b>Пара BTCUSDT</b> = «что и в чём»: цена биткоина в USDT (стейбл ≈ $1). ETHUSDT — то же для эфира. <b>Торгуем только BTCUSDT и ETHUSDT</b> — чистая ликвидность.</p>
+    <p><b>Свеча</b> = один период времени: <b>тело</b> (открытие ↔ закрытие) · <b>тени</b> (куда цена сходила и её отвергли) · <b>цвет</b> (🟠 рост / 🟣 падение). Таймфреймы D1 / H4 / H1 / M15 — <b>работаем на D1</b>.</p>
+  </div>
+  <div class="mnemo">Один принцип на весь курс: <b>только спот, только BTC/ETH, только демо.</b> Плечо не трогаем — оно превращает малое движение в потерю всего.</div>
+</section>
+
+<!-- 2. Что двигает цену -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Что двигает цену</h2></div>
+  <div class="law">
+    <div class="lbl">🔑 Главный закон рынка</div>
+    <div class="big">Цена движется <span style="color:var(--warn)">от ликвидности к ликвидности.</span></div>
+    <p>Двигает <b>крупный капитал</b> в поиске ликвидности; розница просто плывёт по течению. Рост/падение = дисбаланс покупателей и продавцов, а не «хорошая новость».</p>
+    <p>Стопы толпы лежат <b>под минимумами</b>, <b>над максимумами</b> и <b>у круглых чисел</b> — туда цена и тянется, чтобы снять их (стоп-хант). Новость = <b>катализатор, не причина</b>: «buy the rumor, sell the news».</p>
+  </div>
+  <div class="mnemo">Запомни: <b>длинный фитиль сквозь уровень = сбор ликвидности, а не пробой.</b> Ждём закрытие свечи, а не реагируем на прокол тенью.</div>
+</section>
+
+<!-- 3. Круглосуточность и сессии -->
+<section>
+  <div class="h"><div class="n">3</div><h2>Круглосуточность и сессии</h2></div>
+  <div class="card">
+    <p>Крипта работает <b>24/7 без гэпов</b>. Плюс — непрерывность; минус — <b>нет паузы</b>: стоп ставим <b>ВСЕГДА ордером</b>, потому что рынок не спит. Ночью и в выходные ликвидность тонкая → много <b>ложных движений</b>.</p>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <p class="muted" style="margin-bottom:14px">Сессии в <b>UTC</b> · яркая полоса — пик активности Лондон+США (~13:00–16:00 UTC):</p>
+    <div class="sess">
+      <div class="srow"><div class="sname">Азия</div><div class="strack"><div class="sbar asia" style="left:0%;width:33.3%">00–08</div></div></div>
+      <div class="srow"><div class="sname">Лондон</div><div class="strack"><div class="sbar london" style="left:29.2%;width:37.5%">07–16</div></div></div>
+      <div class="srow"><div class="sname">США</div><div class="strack"><div class="sbar usa" style="left:54.2%;width:33.3%">13–21</div></div></div>
+      <div class="srow"><div class="sname" style="color:var(--warn)">ПИК</div><div class="strack"><div class="sbar peak" style="left:54.2%;width:12.5%">13–16</div></div></div>
+    </div>
+    <div class="axis"><div></div><div class="ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>
+  </div>
+  <div class="mnemo">Твоё время — <b>UTC+5</b> (перевод: <b>твоё − 5 = UTC</b>). У тебя: <b>открытие дневной свечи 05:00</b> (главный ориентир — здесь закрывается предыдущая D1 и становится ясно, жива ли идея), пик Лондон+США <b>18:00–21:00</b>.<br>
+  <b>Часового окна для входа у свингера нет.</b> Сессии — про качество ликвидности, а не про расписание торговли: сделка ставится <b>отложенными ордерами</b> и исполняется, когда придёт цена, хоть ночью. Выходные — не запрет, а предупреждение: ликвидность тоньше, ложных движений больше.</div>
+</section>
+
+<!-- 4. Чем крипта отличается -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Чем крипта отличается от других рынков</h2></div>
+  <div class="roles">
+    <div class="role">
+      <div class="rt">Волатильность</div>
+      <p><b>5–10% в день</b> по BTC/ETH — норма. Больше возможностей, но больше шума и ложняка → <b>риск строже.</b></p>
+    </div>
+    <div class="role">
+      <div class="rt">BTC — рубильник</div>
+      <p>Падает BTC → падают почти все альты. Для альта <b>BTC = ещё один старший ТФ.</b> Не торговать альт против BTC.</p>
+    </div>
+    <div class="role">
+      <div class="rt">Слой деривативов</div>
+      <p>funding / OI / ликвидации / heatmap = «панель настроений толпы». Читаем как <b>контекст</b>, не торгуем плечом.</p>
+    </div>
+  </div>
+  <div class="mnemo">Ликвидность неравномерна → учимся <b>только на BTC/ETH</b> (чистый график). Мелкие альты рваные и манипулятивные — мимо.</div>
+</section>
+
+<!-- 5. Ловушки -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Ловушки новичка</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">«Пересижу как на споте»</div>
+      <p>С плечом не пересидишь: <b>плечо ×10 + движение −5% = −50%</b>, при −10% — <b>принудительная ликвидация.</b> На споте так потерять всё нельзя.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Контекст ≠ сигнал входа</div>
+      <p><b>Контекст</b> (настроение, перпы) <span class="neq">≠</span> <b>сигнал</b> (свеча на уровне). Контекст говорит «куда дует ветер», но <b>вход без свечи не открывается.</b></p>
+    </div>
+    <div class="trap">
+      <div class="no">Торговля на новости</div>
+      <p>Влезать в <b>первую секунду новости</b> = казино: хаос, тонкая ликвидность, разворот. Реакция рынка важнее самого факта.</p>
+    </div>
+    <div class="trap">
+      <div class="no">«Хорошая новость → рост»</div>
+      <p>Часто наоборот: новость уже <b>в цене</b>, крупные фиксируют прибыль, новички выкупают выход. <b>Sell the news.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Спот</b> — владеешь монетой, теряешь максимум вложенное. <b>Перп</b> — плечо, при движении против = ликвидация. Курс — только спот.</li>
+      <li>Торгуем <b>только BTCUSDT / ETHUSDT</b>, только демо. Работаем на <b>D1</b>.</li>
+      <li><b>Свеча:</b> тело = кто победил, тень = кого вынесли, цвет = 🟠 рост / 🟣 падение.</li>
+      <li><b>Главный закон:</b> цена движется <b>от ликвидности к ликвидности</b> (стопы под мин/над макс/у круглых).</li>
+      <li>Двигает рынок <b>крупный капитал</b>; новость = катализатор, не причина. «Buy the rumor, sell the news».</li>
+      <li>Крипта <b>24/7 без гэпов</b> → стоп ВСЕГДА ордером; ночью и в выходные ликвидность тоньше, движения чаще ложные.</li>
+      <li>Твоё окно (UTC+5): свеча открывается <b>05:00</b>, пик <b>18:00–21:00</b>, актив <b>19:00–01:00</b>.</li>
+      <li>Волатильность 5–10%/день — норма; <b>BTC = рубильник</b> всего рынка.</li>
+      <li>Деривативы — <b>контекст</b>, не вход; плечо = главная опасность.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Модуль 1</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Навигация: <a class="navlink" href="index.html">все шпаргалки</a> · <a class="navlink" href="m2-chart.html">Модуль 2</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка — Модуль 4 · Система: входы и риск</title>
+<style>
+  :root{
+    --up:#ff8c1a; --up-dim:#ff8c1a22; --up-bd:#ff8c1a55;
+    --down:#a855f7; --down-dim:#a855f722; --down-bd:#a855f755;
+    --bg:#0d1017; --card:#161b26; --card2:#1d2432; --line:#2a3242;
+    --txt:#e7ecf5; --muted:#93a0b5; --accent:#4fd1c5; --warn:#ffd23f;
+    --go:#3ddc84; --go-dim:#3ddc8418; --no:#ff5470; --no-dim:#ff547018;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:32px 18px 80px;max-width:1080px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:660px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px;white-space:nowrap}
+  .h .n.wide{flex:0 0 auto;padding:0 10px;font-size:14px}
+  .h h2{font-size:20px;font-weight:700}
+  .h .lsn{margin-left:auto;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px}
+  p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)}
+  b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+  .up-t{color:var(--up);font-weight:700}
+  .down-t{color:var(--down);font-weight:700}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13.5px;color:var(--accent)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+
+  .law{background:linear-gradient(135deg,#161b26,#1a2130);border:1px solid var(--line);border-radius:16px;padding:24px 24px 20px;position:relative;overflow:hidden}
+  .law::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,#4fd1c522,transparent 60%);pointer-events:none}
+  .law .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--warn);font-weight:700;margin-bottom:10px}
+  .law .big{font-size:19px;font-weight:800;line-height:1.4;margin-bottom:14px;position:relative}
+  .law p{position:relative}
+
+  /* формула тактов */
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s{color:var(--accent);font-weight:800;font-size:17px}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+  .step.ctx{border-color:var(--warn)}
+  .step.ctx .s{color:var(--warn)}
+
+  /* сетапы */
+  .setups{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.setups{grid-template-columns:1fr}}
+  .su{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;border-top:3px solid var(--accent)}
+  .su .st{font-weight:800;font-size:16px;margin-bottom:4px}
+  .su .sn{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .su p{font-size:14px;color:var(--muted)}
+  .su p b{color:var(--txt)}
+  .su .stop{margin-top:10px;font-size:13px;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--muted)}
+  .su .stop b{color:var(--warn)}
+
+  /* таблица */
+  .tw{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--card2);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  tr:last-child td{border-bottom:0}
+  td b{color:#fff}
+  .ok-t{color:var(--go);font-weight:700}
+  .no-t{color:var(--no);font-weight:700}
+
+  /* ловушки */
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:13.5px;color:var(--muted)}
+  .trap p b{color:var(--txt)}
+
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 4 · Система: входы и риск</div>
+  <h1>Модуль 4 — <span class="em">от «где» до «сколько»</span></h1>
+  <p class="sub">Модули 1–3 дали карту, точки и контекст. Модуль 4 собирает их в машину: формула входа → 4 сетапа → риск и R:R → дисциплина. Здесь же живой калькулятор позиции.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 рост (close &gt; open)</span>
+    <span><i class="dot d"></i> 🟣 падение (close &lt; open)</span>
+  </div>
+</header>
+
+<!-- ГЛАВНЫЙ ЗАКОН -->
+<section>
+  <div class="law">
+    <div class="lbl">Закон Модуля 4</div>
+    <div class="big">Паттерн торгуется <span class="accent">ТОЛЬКО на уровне</span>. Свеча в пустоте — мусор.<br>
+    А <span class="accent">стоп определяет сделку</span> — не наоборот.</div>
+    <p class="muted">Уровень отвечает <b>ГДЕ</b>. Свеча — <b>КОГДА</b>. Старший ТФ — <b>КУДА</b>. Стоп — <b>СКОЛЬКО</b>. Лимиты — <b>ИМЕЮ ЛИ ПРАВО</b>. Пропущен любой из пяти — сделки нет. Никаких «ну почти».</p>
+  </div>
+</section>
+
+<!-- 4.1 ФОРМУЛА -->
+<section>
+  <div class="h"><div class="n">4.1</div><h2>Формула входа и конфлюенс</h2><div class="lsn">18/20</div></div>
+
+  <div class="formula">
+    <div class="step ctx"><div class="k">такт ⓪</div><div class="v"><span class="s">⓪</span> Контекст</div><small>D1-тренд · BTC · доминация · funding. Это <b>фильтр-ВЕТО</b>, а не вход.</small></div>
+    <div class="step"><div class="k">такт ①</div><div class="v"><span class="s">①</span> Направление</div><small>КУДА · D1. Вхожу ПО тренду старшего ТФ.</small></div>
+    <div class="step"><div class="k">такт ②</div><div class="v"><span class="s">②</span> Локация</div><small>ГДЕ · D1. Цена в зоне / на уровне, не в воздухе.</small></div>
+    <div class="step"><div class="k">такт ③</div><div class="v"><span class="s">③</span> Триггер</div><small>КОГДА · H1. Свеча-сигнал <b>по закрытию</b>.</small></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <p><b class="accent">Двери и гири — рабочая опора.</b> Сначала открываю <b>4 ДВЕРИ</b> (такты ⓪①②③ — вопрос да/нет), потом считаю <b>ГИРИ</b> (конфлюенс — вопрос сколько). Такт ≠ фактор. Дверь либо открыта, либо нет; гиря добавляет вес.</p>
+    <p><b class="warn" style="color:var(--warn)">Правило независимости.</b> Конфлюенс — это <b>≥3 РАЗНЫХ</b> фактора. Одно событие, названное тремя словами, — <b>один</b> фактор.</p>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card">
+      <p style="color:var(--no);font-weight:800;margin-bottom:8px">✕ ДУБЛИ — считать один раз</p>
+      <p class="muted">«Зона спроса» + «поддержка» + «полярность» на одной цене = <b>ОДИН</b> фактор. Полярность — это <i>механизм</i> уровня, а не отдельная гиря.</p>
+      <p class="muted">«Ретест» + «полярность» = <b>одно событие</b>.</p>
+    </div>
+    <div class="card">
+      <p style="color:var(--go);font-weight:800;margin-bottom:8px">✓ НЕЗАВИСИМЫЕ — считать отдельно</p>
+      <p class="muted"><b>Круглое число</b> на той же цене, что и зона — <b>отдельная</b> гиря: психология ≠ структура.</p>
+      <p class="muted"><b>BOS</b> — отдельная гиря: рынок <b>закрытием доказал</b> направление. Это не «часть названия сетапа».</p>
+    </div>
+  </div>
+
+  <div class="mnemo">🎛 Интерактив: <a href="entry-checklist.html">чек-лист входа</a> — отмечаешь такты и факторы, получаешь живой вердикт «вход / нет».</div>
+</section>
+
+<!-- 4.2 + 4.3 СЕТАПЫ -->
+<section>
+  <div class="h"><div class="n wide">4.2 · 4.3</div><h2>Четыре сетапа</h2><div class="lsn">17/20 · 18/20</div></div>
+
+  <div class="setups">
+    <div class="su" style="border-top-color:var(--up)">
+      <div class="sn">Сетап 1 · разворотный</div>
+      <div class="st">Пин-бар</div>
+      <p>Малое тело + длинная тень <b>≥2–3× тела</b> = отвержение цены. Бычий (нижняя тень) на поддержке/спросе, медвежий (верхняя) на сопротивлении/предложении. Длинный фитиль = <b>снятие ликвидности</b>.</p>
+      <div class="stop"><b>Стоп:</b> за кончик фитиля, с запасом</div>
+    </div>
+
+    <div class="su" style="border-top-color:var(--up)">
+      <div class="sn">Сетап 2 · разворотный</div>
+      <div class="st">Поглощение</div>
+      <p>Две свечи: вторая телом <b>полностью перекрывает</b> первую в обратную сторону = перехват силы. Обычно <b>надёжнее пина</b>. Критерий — <b>ПЕРЕКРЫТИЕ границ</b>, а не размер тела.</p>
+      <div class="stop"><b>Стоп:</b> за край поглощающей свечи</div>
+    </div>
+
+    <div class="su" style="border-top-color:var(--accent)">
+      <div class="sn">Сетап 3 · трендовый</div>
+      <div class="st">BOS + ретест</div>
+      <p>① <b>BOS</b> — пробой экстремума <b>ЗАКРЫТИЕМ</b> тела → ② <b>ретест</b>: цена возвращается к месту пробоя, по <b>полярности</b> бывшее сопротивление = теперь поддержка → ③ <b>триггер</b> на ретесте. Двойная проверка: рынок доказал направление <i>и</i> дал цену получше.</p>
+      <div class="stop"><b>Стоп:</b> за зону ретеста · <b>Имя целиком: BOS + РЕТЕСТ.</b> Влетать на пробое — не Сетап 3, а лотерея</div>
+    </div>
+
+    <div class="su" style="border-top-color:var(--down)">
+      <div class="sn">Сетап 4 · для флэта</div>
+      <div class="st">Ложный пробой</div>
+      <p>① граница диапазона (equal highs/lows = полка стопов) → ② вынос за границу собирает стопы → ③ свеча <b>ЗАКРЫВАЕТСЯ обратно ВНУТРЬ</b> → вход <b>ПРОТИВ</b> пробоя. Крупный гнал цену за край не чтобы пробить, а чтобы залить позицию об толпу.</p>
+      <div class="stop"><b>Стоп:</b> за кончик фитиля прокола · <b>Цель: противоположная граница</b> диапазона</div>
+    </div>
+  </div>
+
+  <div class="law" style="margin-top:16px">
+    <div class="lbl">Главный дискриминатор модуля</div>
+    <div class="big">Сетап 3 или Сетап 4 — решает <span class="accent">ОДНО: ЗАКРЫТИЕ свечи</span>.</div>
+    <p class="muted"><b>Закрылась ЗА уровнем</b> → пробой настоящий → <b>Сетап 3</b>, идём <b>ПО</b> пробою (но только на ретесте!).<br>
+    <b>Вернулась ВНУТРЬ</b> → пробой ложный → <b>Сетап 4</b>, идём <b>ПРОТИВ</b> пробоя, к другой границе.<br>
+    <b class="warn" style="color:var(--warn)">Пока свеча не закрылась — ты не знаешь, какой из двух.</b> Фитиль сквозь уровень — не событие, а сбор ликвидности. Единственное спасение — <b>ждать закрытия</b>.</p>
+    <p class="muted" style="margin-top:10px">🕐 Закрытия <b>чего</b>? Уровень размечен на D1 → ждёшь <b>дневного закрытия — 05:00 по твоему времени</b> (UTC+5). Это может быть 6 часов ожидания. Поэтому свинг ставит <b>отложенные ордера</b> и идёт спать.</p>
+  </div>
+
+  <div class="mnemo">🕯 Формы триггер-свечей подробно: <a href="patterns-cheatsheet.html">свечи-сигналы</a> · 🧭 когда спускаться на H1: <a href="d1-h1-cheatsheet.html">правило 3 замков</a></div>
+</section>
+
+<!-- 4.4 РИСК -->
+<section>
+  <div class="h"><div class="n">4.4</div><h2>Риск, размер позиции, R:R</h2><div class="lsn">18/20</div></div>
+
+  <div class="card">
+    <p><b class="accent">Риск первичен, а не вход.</b> Профи считает «сколько теряю, если вход — мусор», и только потом «стоит ли». Можно быть правым в 40% случаев и зарабатывать; в 70% — и слить.</p>
+    <p><b>Риск ≤ 0.5% депозита на сделку.</b> Серия из 10 минусов: при 0.5% → −5%, при 2% → −18%, при 5% → −40%, при 10% → −65%. <b class="down-t">Асимметрия просадки: отыграть −50% нужно +100%.</b></p>
+    <p><b>Крупная позиция ≠ плечо.</b> На споте позиция может быть 25–50% депо — это свои деньги. Риск держит <b>тесный стоп</b>, а не малый объём. Риск = позиция × дистанция до стопа.</p>
+  </div>
+
+  <div class="law" style="margin-top:14px">
+    <div class="lbl">Порядок действий — вход почти последний</div>
+    <div class="big">стоп → структурная цель → R:R ≥ 1:2? → дистанция % → объём → ордера</div>
+    <p class="muted"><b>1. Стоп</b> — точка, где идея <b>МЕРТВА</b>. Не «где не жалко». <b>2. Цель</b> — из <b>СТРУКТУРЫ</b> (следующий уровень / противоположная граница), не «×2 на глаз». <b>3. R:R</b> — если &lt; 1:2, сделки нет, и точка. <b>4.</b> Только теперь считаешь объём.</p>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card">
+      <p><b>Формула размера позиции</b></p>
+      <p class="accent" style="font-size:15px">объём ($) = (депозит × риск%) ÷ дистанция до стопа в %</p>
+      <p class="muted">Убыток в долларах <b>всегда один</b> — меняется только объём. Ближе стоп → крупнее позиция на тот же риск. Поэтому вход впритык к уровню лучше входа в пустоте.</p>
+    </div>
+    <div class="card">
+      <p><b>R:R ≥ 1:2 — фильтр, не цель</b></p>
+      <p class="muted">При 1:2 достаточно <b>34% винрейта</b>, чтобы не терять. Алгоритм: нашёл <b>структурную</b> цель → проверил ≥1:2 → взял. <b>Не наоборот.</b></p>
+      <p class="muted">У Сетапа 4 цель = противоположная граница → R:R там часто <b>жирнее 1:2</b> сам по себе.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;border-left:3px solid var(--no)">
+    <p style="color:var(--no);font-weight:800">✕ Самообман №1: подвинуть стоп ради красивого R:R</p>
+    <p class="muted">Ты двигаешь <b>ЦИФРУ</b>, а не <b>СТРУКТУРУ</b>. Уровень не сдвинулся, вероятность выбива выросла, матожидание стало <b>хуже</b> — а R:R «улучшился» только на бумаге. Честный путь поднять R:R: <b>лучший вход</b> или <b>подождать</b>.</p>
+  </div>
+</section>
+
+<!-- КАЛЬКУЛЯТОР — вынесен на отдельный лист -->
+<section id="calc">
+  <div class="h"><div class="n">🧮</div><h2>Посчитать позицию</h2><div class="lsn">урок 4.4</div></div>
+  <div class="mnemo" style="margin-top:0">
+    Все расчёты живут на одном листе — <a href="calc.html#position"><b>калькуляторы</b></a>: вход + стоп + цель → риск $, дистанция %, объём, R:R и вердикт по фильтру 1:2.<br>
+    Там же <a href="calc.html#grid">сетка круглых</a> (рабочий шаг от цены) и <a href="calc.html#dist">дистанция до уровня</a> в дневных ходах.
+  </div>
+</section>
+
+<!-- 4.5 ДИСЦИПЛИНА -->
+<section>
+  <div class="h"><div class="n">4.5</div><h2>Лимиты, ордера, плечо</h2><div class="lsn">17/20</div></div>
+
+  <div class="law">
+    <div class="lbl">Сердце урока 4.5</div>
+    <div class="big">Лимит защищает не счёт — <span class="accent">а способность мыслить</span>.</div>
+    <p class="muted">Слить депозит можно с <b>идеальными входами</b> — достаточно не иметь тормозов. «Идеальность сетапа» — свойство <b>РЫНКА</b>; лимит — про <b>ОПЕРАТОРА</b>. Идеальный сетап в руках заведённого человека перестаёт быть идеальным: он подвинет стоп, добавится в убыток, возьмёт объём больше нормы.</p>
+    <p class="muted" style="margin-top:10px"><b>Асимметрия:</b> сетапов рынок производит <b>бесконечно</b> — депозит у тебя <b>один и конечен</b>. Пропущенный сетап стоит <b>ноль</b>.</p>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <p><b>Три уровня стопа</b></p>
+    <div class="tw" style="margin-top:10px">
+      <table>
+        <tr><th>Уровень</th><th>Лимит</th><th>Что делаешь</th></tr>
+        <tr><td><b>1 сделка</b></td><td>риск <b>≤ 0.5%</b></td><td>стоп выбил — принял, идёшь дальше</td></tr>
+        <tr><td><b>серия</b></td><td><b>2 стопа подряд</b></td><td><b>пауза до новой разметки</b> — старая гипотеза мертва, рисуешь заново</td></tr>
+        <tr><td><b>1 неделя</b></td><td><b>−5%</b></td><td><b>пауза до понедельника</b> + разбор журнала</td></tr>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:12px">⚠️ <b>2 стопа подряд срабатывают даже при −1%</b> — дело не в деньгах, а в состоянии: ты не в фазе с рынком, и психика уже заряжена на отыгрыш. Правило = цифра, принятая <b>заранее спокойным тобой</b>, чтобы связать руки будущему заведённому. <b>Оно не для того, чтобы думать, — а чтобы НЕ думать, когда думать уже нечем.</b></p>
+    <p class="muted" style="margin-top:10px">🕐 <b>Дневного лимита у свингера нет</b> — на D1 ты физически не сделаешь 5 сделок за день. Твой тильт выглядит иначе: <b>передержать мёртвую идею</b> («ещё чуть-чуть, развернётся») и <b>войти вне плана после долгого ожидания</b> («две недели тишины, надоело»). Оба лечатся не лимитом в деньгах, а возвратом к разметке.</p>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <p><b>Ордера на OKX</b> — стоп <b>ВСЕГДА</b> физическим ордером. Крипта 24/7, свинг = ты не у экрана. «Мысленный стоп» = отсутствие стопа.</p>
+    <div class="tw" style="margin-top:10px">
+      <table>
+        <tr><th>Тип</th><th>Что делает</th><th>Беда</th><th>Где применяем</th></tr>
+        <tr><td><b>Limit</b></td><td>строго по твоей цене или лучше</td><td class="no-t">неисполнение<br><span class="muted" style="font-weight:400">цена перепрыгнула — ордер висит</span></td><td><b>вход</b> заранее (на ретест, пока спишь) · <b>тейк</b></td></tr>
+        <tr><td><b>Market</b></td><td>мгновенно по рынку</td><td class="warn" style="color:var(--warn)">проскальзывание<br><span class="muted" style="font-weight:400">выйдешь, но чуть хуже по цене</span></td><td><b>стоп-лосс</b></td></tr>
+        <tr><td><b>Stop / Trigger</b></td><td>спящий: триггер-цена → выставляет ордер</td><td class="muted">—</td><td><b>SL и TP</b> (триггер + тип исполнения)</td></tr>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:12px"><b class="accent">Асимметрия стоп/тейк:</b> стоп <b>ОБЯЗАН</b> исполниться → market (выйти важнее, чем выйти красиво). Тейк <b>НЕ обязан</b> → limit даже лучше: не исполнится — просто останешься в прибыльной сделке.</p>
+  </div>
+
+  <div class="card" style="margin-top:14px;border-left:3px solid var(--no)">
+    <p style="color:var(--no);font-weight:800">☠️ Плечо — главный враг</p>
+    <p class="muted"><b>10x:</b> −10% = ликвидация. В крипте −10% за день — <b>рядовое событие</b> (волатильность 5–10%). <b>20x:</b> достаточно <b>−5%</b>.</p>
+    <p class="muted"><b>И стоп не спасёт:</b> структурный стоп часто стоит <b>ДАЛЬШЕ</b> дистанции ликвидации → биржа вынесет тебя <b>раньше</b>, чем цена дойдёт до стопа. Стоп становится декорацией.</p>
+    <p class="muted"><b class="down-t">Твоя ликвидация = чужая ликвидность.</b> Крупный <b>видит</b> кучи плечевых стопов (heatmap, урок 3.4) и гонит цену туда фитилём. Ты можешь быть <b>ПРАВ по направлению</b> — и всё равно потерять всё, потому что тебя ликвидируют <b>ДО</b> движения. Спотовик тот же фитиль пересидел и <b>купил дно</b> (это буквально Сетап 4!). Эталон — обвал 5 авг 2024: фитиль к 49k = каскад ликвидаций.</p>
+    <p class="muted"><b>«$38 — несерьёзная позиция»?</b> Нет. Она <b>корректно рассчитана</b>. Ошибка не в арифметике, а в вопросе: меряешь <b>позицию</b>, а мерить надо <b>РИСК</b>. На депо $200 задача — <b>навык и R, а не доход</b>. Счёт — тренажёр.</p>
+  </div>
+</section>
+
+<!-- ЧЕК-ЛИСТ -->
+<section>
+  <div class="h"><div class="n">✅</div><h2>Финальный чек-лист входа</h2><div class="lsn">весь М4</div></div>
+  <div class="final">
+    <ul>
+      <li><b>⓪ КОНТЕКСТ</b> — BTC / доминация / funding не дают вето <span class="muted">(фильтр, НЕ вход)</span></li>
+      <li><b>① НАПРАВЛЕНИЕ</b> — D1-тренд размечен (HH·HL / LH·LL) · вхожу <b>ПО</b> тренду старшего ТФ</li>
+      <li><b>② ЛОКАЦИЯ</b> — цена у уровня/зоны, не в воздухе · конфлюенс <b>≥3 независимых</b>, без дублей и без потерянных</li>
+      <li><b>③ ТРИГГЕР</b> — свеча-сигнал <b>по закрытию</b> · сетап назван <b>номером и именем</b></li>
+      <li><b>④ РИСК</b> — стоп за структуру (где идея мертва) · ≤0.5% · тейк из структуры · <b>R:R ≥ 1:2</b> · стоп не двигаем</li>
+      <li><b>⑤ ДИСЦИПЛИНА</b> — лимиты дня/недели не выбраны · стоп и тейк <b>ордерами на бирже</b> · я спокоен, не отыгрываюсь</li>
+    </ul>
+    <div class="mnemo" style="margin-top:16px">
+      <b>Порядок:</b> открываю <b>ДВЕРИ</b> (⓪①②) → считаю <b>ГИРИ</b> (≥3) → жду <b>ТРИГГЕР</b> (③) → проверяю <b>ПРАВО входить</b> (⑤) → считаю <b>РИСК</b> (④).<br>
+      Один «нет» = <b>входа нет</b>. Никаких «ну почти».
+    </div>
+  </div>
+</section>
+
+<!-- ЛИЧНЫЕ ЛОВУШКИ -->
+<section>
+  <div class="h"><div class="n">🎯</div><h2>Мои личные ловушки</h2><div class="lsn">по итогам М4</div></div>
+  <p class="muted" style="margin-bottom:14px">Собрано из реальных ДЗ и экзамена. Это не про знание — знаю я всё. Это про <b>сверку на выходе</b>.</p>
+
+  <div class="traps">
+    <div class="trap">
+      <div class="no">BOS — это ФАКТОР, а не только имя сетапа</div>
+      <p>Дважды называл BOS в ответе и <b>не считал его в конфлюенсе</b>. А он, возможно, сильнейшая гиря: рынок <b>закрытием тела доказал</b> направление. Не мнение — факт, за который заплачено деньгами. <b>Забирай его в список.</b></p>
+    </div>
+    <div class="trap">
+      <div class="no">Перед точкой — две сверки</div>
+      <p><b>1. Перечитай ВОПРОС:</b> ровно на это отвечаю? Всё ли спросили — закрыл? <span class="muted">(ронял: число факторов, сторону сделки, цену цели, «почему»)</span><br><b>2. Сверь НАБОР:</b> нет дублей? <b>не уронил настоящий?</b></p>
+    </div>
+    <div class="trap">
+      <div class="no">Круглые числа — только настоящие</div>
+      <p><b>BTC:</b> 70k · 75k · 90k · 100k · 110k <span class="muted">(половинки 95k/105k)</span>. <b>ETH:</b> 3000 · 3500 · 4000.<br><b class="no-t">72 000 и 108 000 — НЕ круглые.</b> Из «роняю круглое» не прыгать в «вижу круглое там, где его нет».</p>
+    </div>
+    <div class="trap">
+      <div class="no">Конец должен сходиться с началом</div>
+      <p>Ловил себя на «это не фактор… это гиря» <span class="muted">(гиря И ЕСТЬ фактор)</span> и на «контекста нет» — сразу после того, как сам его назвал. <b>Дочитай свой ответ до конца и сверь с началом.</b></p>
+    </div>
+    <div class="trap">
+      <div class="no">Переверни взгляд</div>
+      <p>На каждой зоне спрашивай <b>оба</b> раза вслух: «что тут для <span class="up-t">лонга</span>?» и «что тут для <span class="down-t">шорта</span>?». Дважды проходил мимо зеркального сетапа от своей же зоны.</p>
+    </div>
+    <div class="trap">
+      <div class="no">«Почему» не должно быть круговым</div>
+      <p>«Нельзя, потому что запрещает» — это пересказ правила, а не причина. Выводи <b>цепочку</b>: <i>funding +0.09% = 9× нормы → лонгисты платят → толпа перегружена в лонгах → рынок вынесет их вниз → за шорт.</i> Заученная табличка переворачивается; выведенная цепочка — нет.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Модуль 4 · Система: входы и риск — ЗАВЕРШЁН</div>
+  4.1 — 18 · 4.2 — 17 · 4.3 — 18 · 4.4 — 18 · 4.5 — 17 · <b style="color:var(--warn)">Мини-экзамен №4 — 17/20</b><br>
+  Все шпаргалки: <a href="index.html">обложка</a> · Чек-лист: <a href="entry-checklist.html">интерактив</a> · Журнал: <a href="../journal/journal.html">сделки</a><br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шпаргалка 3.4 — OI, ликвидации, heatmap</title>
+<style>
+  :root{
+    --up:#ff8c1a; --up-dim:#ff8c1a22; --up-bd:#ff8c1a55;
+    --down:#a855f7; --down-dim:#a855f722; --down-bd:#a855f755;
+    --bg:#0d1017; --card:#161b26; --card2:#1d2432; --line:#2a3242;
+    --txt:#e7ecf5; --muted:#93a0b5; --accent:#4fd1c5; --warn:#ffd23f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:32px 18px 80px;max-width:1080px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  header{text-align:center;margin-bottom:36px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:8px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;max-width:660px;margin:0 auto}
+  .legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .legend span{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+  .dot.u{background:var(--up)} .dot.d{background:var(--down)}
+
+  section{margin-top:34px}
+  .h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .h .n{flex:0 0 34px;height:34px;border-radius:9px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:16px}
+  .h h2{font-size:20px;font-weight:700}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card + .card{margin-top:14px}
+  p{margin-bottom:10px} p:last-child{margin-bottom:0}
+  .muted{color:var(--muted)} b,strong{color:#fff;font-weight:700}
+  .accent{color:var(--accent);font-weight:700}
+  .badge-u{color:var(--up);font-weight:800} .badge-d{color:var(--down);font-weight:800}
+
+  /* три прибора */
+  .instr{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.instr{grid-template-columns:1fr}}
+  .ins{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .ins .q{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);font-weight:800;margin-bottom:6px}
+  .ins h3{font-size:16px;margin-bottom:6px}
+  .ins p{font-size:14px;color:var(--muted)}
+  .ins.now{border-color:var(--accent)}
+
+  /* OI vs volume */
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch}
+  @media(max-width:600px){.vs{grid-template-columns:1fr}}
+  .vs .box{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .vs .box h4{font-size:15px;margin-bottom:8px;color:var(--accent)}
+  .vs .box p{font-size:14px}
+  .vs .mid{display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--muted);font-size:22px}
+  @media(max-width:600px){.vs .mid{padding:4px}}
+
+  /* 4 комбо цена×OI */
+  .combo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.combo{grid-template-columns:1fr}}
+  .cbox{border-radius:14px;padding:18px;border:1px solid}
+  .cbox.good-u{background:var(--up-dim);border-color:var(--up-bd)}
+  .cbox.good-d{background:var(--down-dim);border-color:var(--down-bd)}
+  .cbox.weak{background:var(--card);border-color:var(--line)}
+  .cbox .cc{font-size:17px;font-weight:900;margin-bottom:8px}
+  .cbox.good-u .cc{color:var(--up)} .cbox.good-d .cc{color:var(--down)}
+  .cbox .cc small{font-size:13px;color:var(--muted);font-weight:600;display:block;margin-top:2px}
+  .cbox p{font-size:14px}
+  .cbox .verdict{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-weight:800;font-size:14px}
+  .cbox.good-u .verdict{color:var(--up)} .cbox.good-d .verdict{color:var(--down)}
+  .cbox.weak .verdict{color:var(--warn)}
+
+  /* ликвидации механика */
+  .liq{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.liq{grid-template-columns:1fr}}
+  .lq{border-radius:14px;padding:18px;border:1px solid}
+  .lq.d{background:var(--down-dim);border-color:var(--down-bd)}
+  .lq.u{background:var(--up-dim);border-color:var(--up-bd)}
+  .lq h3{font-size:15px;margin-bottom:10px}
+  .lq.d h3{color:var(--down)} .lq.u h3{color:var(--up)}
+  .lq .chain{font-size:14px;line-height:1.6}
+  .lq .chain b{color:#fff}
+  .lq .res{margin-top:10px;font-weight:900;font-size:16px}
+  .lq.d .res{color:var(--down)} .lq.u .res{color:var(--up)}
+
+  /* heatmap */
+  .hm{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+  @media(max-width:600px){.hm{grid-template-columns:1fr}}
+  .hmviz{width:150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0f131b}
+  .hmrow{height:20px;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#0d1017;font-weight:800}
+  .price-line{height:22px;background:var(--accent);color:#062c28;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:800}
+
+  .formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+  .step{flex:1 1 150px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .s{color:var(--accent);font-weight:800}
+  .step .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .step .v{font-weight:700;font-size:14.5px}
+  .step small{color:var(--muted);font-weight:400;display:block;font-size:12.5px;margin-top:3px}
+
+  .traps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.traps{grid-template-columns:1fr}}
+  .trap{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:12px;padding:16px 18px}
+  .trap .no{color:var(--warn);font-weight:800;font-size:14px;margin-bottom:6px}
+  .trap .no::before{content:"⚠ "}
+  .trap p{font-size:14px}
+  .neq{color:var(--down);font-weight:800}
+
+  .final{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .final ul{list-style:none}
+  .final li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+  .final li:last-child{border-bottom:0}
+  .final li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:800}
+  .mnemo{margin-top:14px;background:#12161f;border:1px dashed var(--line);border-radius:12px;padding:14px 18px;font-size:14.5px;color:var(--muted)}
+  .mnemo b{color:var(--warn)}
+
+  footer{text-align:center;margin-top:44px;color:var(--muted);font-size:13px;line-height:1.7}
+  footer .m{color:#fff;font-weight:600}
+  .navlink{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Модуль 3 · Урок 3.4 · Контекст рынка</div>
+  <h1>OI · ликвидации · heatmap — <span class="em">где лежит топливо</span></h1>
+  <p class="sub">Финал блока деривативов. Всё это — контекст, не вход. Показывает масштаб денег толпы и где её будут выносить.</p>
+  <div class="legend">
+    <span><i class="dot u"></i> 🟠 движение вверх</span>
+    <span><i class="dot d"></i> 🟣 движение вниз</span>
+  </div>
+</header>
+
+<!-- Три прибора -->
+<section>
+  <div class="h"><div class="n">1</div><h2>Три прибора контекста ⓪</h2></div>
+  <div class="instr">
+    <div class="ins">
+      <div class="q">Куда</div>
+      <h3>Funding</h3>
+      <p>На какую сторону склонилась толпа (знак + / −). Настроение.</p>
+    </div>
+    <div class="ins now">
+      <div class="q">Сколько</div>
+      <h3>Open Interest</h3>
+      <p>Сколько денег / убеждённости в рынке. Масштаб, приток / отток.</p>
+    </div>
+    <div class="ins now">
+      <div class="q">Где</div>
+      <h3>Ликвидации + heatmap</h3>
+      <p>Где лежит топливо и куда оно потянет цену. Магнит.</p>
+    </div>
+  </div>
+  <div class="mnemo"><b>Funding</b> — отдельная <a class="navlink" href="funding-cheatsheet.html">шпаргалка</a>. Здесь разбираем <b>OI</b> и <b>ликвидации / heatmap</b>. Все три — фильтр перед входом, <b>сам вход даёт свеча на уровне.</b></div>
+</section>
+
+<!-- OI -->
+<section>
+  <div class="h"><div class="n">2</div><h2>Open Interest — сколько позиций открыто</h2></div>
+  <div class="card">
+    <p><b>OI = число открытых (ещё не закрытых) контрактов ПРЯМО СЕЙЧАС.</b> Это моментальный снимок «сколько позиций висит на рынке». Нейтрален к направлению — как funding.</p>
+    <p><span class="badge-u">Растёт OI</span> = приток новых денег / позиций (в рынок заходят). <span class="badge-d">Падает OI</span> = позиции закрываются (деньги выходят).</p>
+  </div>
+  <div class="card">
+    <div class="vs">
+      <div class="box"><h4>OI (снимок)</h4><p>Сколько контрактов <b>открыто сейчас</b>. Сколько денег реально <b>осталось</b> в рынке.</p></div>
+      <div class="mid">≠</div>
+      <div class="box"><h4>Volume (за период)</h4><p>Сколько наторговали <b>за час / день</b> (все сделки туда-сюда). Это <b>активность</b>.</p></div>
+    </div>
+    <p class="muted" style="margin-top:12px">Ключ: volume может быть огромным, а OI не сдвинуться — если открывали и тут же закрывали внутри дня. <b>Volume = активность, OI = сколько убеждённости осталось.</b></p>
+  </div>
+</section>
+
+<!-- 4 комбо -->
+<section>
+  <div class="h"><div class="n">3</div><h2>4 комбо: цена × OI</h2></div>
+  <div class="combo">
+    <div class="cbox good-u">
+      <div class="cc">Цена ↑ + OI ↑ <small>заходят новые лонги</small></div>
+      <p>Новые деньги двигают цену вверх. Тренд подкреплён притоком.</p>
+      <div class="verdict">→ здоровый тренд ВВЕРХ 🟠</div>
+    </div>
+    <div class="cbox good-d">
+      <div class="cc">Цена ↓ + OI ↑ <small>заходят новые шорты</small></div>
+      <p>Новые деньги двигают цену вниз. Тренд подкреплён притоком.</p>
+      <div class="verdict">→ здоровый тренд ВНИЗ 🟣</div>
+    </div>
+    <div class="cbox weak">
+      <div class="cc">Цена ↑ + OI ↓ <small>short covering</small></div>
+      <p>Рост на закрытии шортов, а не на новых покупках. Топливо кончается.</p>
+      <div class="verdict">→ рост СЛАБЫЙ, выдыхается</div>
+    </div>
+    <div class="cbox weak">
+      <div class="cc">Цена ↓ + OI ↓ <small>выход / ликвидация лонгов</small></div>
+      <p>Падение на закрытии лонгов, капитуляция. Движение теряет силу.</p>
+      <div class="verdict">→ падение выдыхается</div>
+    </div>
+  </div>
+  <div class="mnemo">Аналогия: <b>цена</b> = куда идёт толпа, <b>OI</b> = толпа растёт или редеет. Движение здорово, когда народа <b>прибавляется</b> (OI↑ в сторону цены).</div>
+</section>
+
+<!-- Ликвидации -->
+<section>
+  <div class="h"><div class="n">4</div><h2>Ликвидации — считай по механике</h2></div>
+  <div class="liq">
+    <div class="lq d">
+      <h3>Ликвидация ЛОНГА</h3>
+      <div class="chain">Биржа принудительно закрывает лонг → это <b>принудительная ПРОДАЖА</b> → давит цену.</div>
+      <div class="res">→ цена ВНИЗ 🟣</div>
+    </div>
+    <div class="lq u">
+      <h3>Ликвидация ШОРТА</h3>
+      <div class="chain">Биржа принудительно закрывает шорт → это <b>принудительная ПОКУПКА</b> → толкает цену.</div>
+      <div class="res">→ цена ВВЕРХ 🟠</div>
+    </div>
+  </div>
+  <div class="mnemo"><b>Каскад</b> = цепная реакция: одни ликвидации запускают следующие (движения 3–8% за минуты). Это механизм «топлива против толпы» из <a class="navlink" href="funding-cheatsheet.html">funding</a>: сильный <b>+</b> → лонг-ликвидации под ценой → <b>каскад вниз</b>; сильный <b>−</b> → шорт-ликвидации над ценой → <b>squeeze вверх</b>.</div>
+</section>
+
+<!-- Heatmap -->
+<section>
+  <div class="h"><div class="n">5</div><h2>Liquidation heatmap — магнит, не сигнал</h2></div>
+  <div class="card">
+    <div class="hm">
+      <div class="hmviz">
+        <div class="hmrow" style="background:#ff8c1a;opacity:.85">кластер шорт-ликв</div>
+        <div class="hmrow" style="background:#ff8c1a44">&nbsp;</div>
+        <div class="price-line">◀ цена сейчас</div>
+        <div class="hmrow" style="background:#a855f744">&nbsp;</div>
+        <div class="hmrow" style="background:#a855f7;opacity:.85">кластер лонг-ликв</div>
+      </div>
+      <div>
+        <p>Яркая зона = много плеча = <b>топливо</b> = <b>МАГНИТ</b>: цена тянется туда, чтобы его снять.</p>
+        <p><b>Кластер ВЫШЕ цены</b> — там ликвидируются <span class="badge-d">шорты</span> → закрытие = покупка → тянет <span class="badge-u">ВВЕРХ 🟠</span>.</p>
+        <p><b>Кластер НИЖЕ цены</b> — там ликвидируются <span class="badge-u">лонги</span> → закрытие = продажа → тянет <span class="badge-d">ВНИЗ 🟣</span>.</p>
+        <p class="muted">Это родня equal highs/lows из 2.4. Используем как ориентир для <b>тейка</b> и понимания «куда тянет» — <b>НЕ как сигнал входа</b>. Модель вероятностная, не грааль.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Формула -->
+<section>
+  <div class="h"><div class="n">6</div><h2>Полная формула контекста</h2></div>
+  <div class="formula">
+    <div class="step" style="border-color:var(--warn)">
+      <div class="k"><span class="s" style="color:var(--warn)">⓪</span> Контекст</div>
+      <div class="v">BTC → доминация → funding → <span style="color:var(--warn)">OI / ликвидации</span></div>
+      <small>фильтр-вето, НЕ вход</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">①</span> Направление</div>
+      <div class="v">тренд D1</div>
+      <small>лонг / шорт</small>
+    </div>
+    <div class="step">
+      <div class="k"><span class="s">②</span> Локация</div>
+      <div class="v">зона / уровень D1</div>
+      <small>где имею право</small>
+    </div>
+    <div class="step" style="border-color:var(--accent)">
+      <div class="k"><span class="s">③</span> Триггер</div>
+      <div class="v">свеча / CHoCH H1</div>
+      <small>когда жму на курок</small>
+    </div>
+  </div>
+</section>
+
+<!-- Ловушки -->
+<section>
+  <div class="h"><div class="n">7</div><h2>Ловушки терминов</h2></div>
+  <div class="traps">
+    <div class="trap">
+      <div class="no">OI ≠ volume</div>
+      <p><b>OI <span class="neq">≠</span> volume.</b> OI — открыто сейчас (снимок); volume — наторговано за период (активность). Большой volume при неизменном OI = гоняли позиции внутри дня.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Рост OI сам по себе не «бычий»</div>
+      <p>OI <b>нейтрален к направлению.</b> «Новые деньги» ≠ «новые лонги». Смысл только в паре с ценой (4 комбо). При падении рынка растущий OI = скорее новые <b>шорты</b>.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Ликвидация лонгов давит ВНИЗ</div>
+      <p>Друг: «лонги ликвидируются → вверх, покупаем!» — <b>ошибка.</b> Ликвидация лонга = принудительная <b>продажа</b> → цена <b>вниз</b>. Считай по механике, не по интуиции.</p>
+    </div>
+    <div class="trap">
+      <div class="no">Heatmap = магнит, не команда</div>
+      <p>Яркий кластер — это <b>куда тянет</b>, а не «входи здесь». Ориентир для тейка и понимания хода. Вход всё равно = <b>свеча на уровне.</b> Модель вероятностная.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Итог -->
+<section>
+  <div class="h"><div class="n">✦</div><h2>Карточка на стену</h2></div>
+  <div class="final">
+    <ul>
+      <li><b>Три прибора ⓪:</b> funding = КУДА толпа, OI = СКОЛЬКО денег, ликвидации/heatmap = ГДЕ топливо.</li>
+      <li><b>OI</b> = открытые контракты сейчас (снимок). <b>≠ volume</b> (оборот за период).</li>
+      <li>OI <b>растёт</b> = приток; <b>падает</b> = выход. Нейтрален к направлению.</li>
+      <li><b>4 комбо:</b> цена↑+OI↑ = здоровый рост 🟠 · цена↓+OI↑ = здоровое падение 🟣 · OI↓ = движение выдыхается.</li>
+      <li><b>Ликвидация лонга</b> = принуд. продажа → <b>вниз 🟣</b>. <b>Ликвидация шорта</b> = принуд. покупка → <b>вверх 🟠</b>.</li>
+      <li><b>Каскад</b> = цепная реакция ликвидаций (3–8% за минуты).</li>
+      <li><b>Heatmap = магнит:</b> кластер выше → тянет вверх, ниже → вниз. Ориентир, не сигнал.</li>
+      <li>Связь с funding: сильно+ → лонг-ликв под ценой → каскад вниз; сильно− → шорт-ликв над ценой → squeeze вверх.</li>
+      <li>Формула: ⓪ (BTC→доминация→funding→<b>OI/ликвидации</b>) → ① → ② → ③.</li>
+      <li>Инструмент — <b>Coinglass</b> (вкладки Open Interest / Liquidation; Heatmap — отдельная страница).</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="m">Крипто-трейдинг по Price Action · Урок 3.4</div>
+  Метод: чистый график → структура → уровни → паттерн от уровня.<br>
+  Соседние шпаргалки: <a class="navlink" href="funding-cheatsheet.html">funding</a> · <a class="navlink" href="patterns-cheatsheet.html">свечи-сигналы</a>.<br>
+  Учебный материал, не финансовый совет. Цвета: 🟠 рост · 🟣 падение.
+</footer>
+
+</body>
+</html>
